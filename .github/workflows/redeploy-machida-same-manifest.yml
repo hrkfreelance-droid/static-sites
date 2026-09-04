@@ -1,0 +1,116 @@
+name: Redeploy Machida unchanged for Web Analytics
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/redeploy-machida-same-manifest.yml'
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create an unchanged production deployment from the current manifest
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PROJECT: machida-shoten-cambodia
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}"
+          auth=(-H "Authorization: Bearer ${CF_API_TOKEN}")
+
+          curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT}" -o /tmp/project.json
+          python3 - /tmp/project.json <<'PY'
+          import json, sys
+          p=(json.load(open(sys.argv[1])).get('result') or {})
+          cfg=p.get('build_config') or {}
+          canonical=(p.get('canonical_deployment') or {}).get('build_config') or {}
+          latest=(p.get('latest_deployment') or {}).get('build_config') or {}
+          tag=cfg.get('web_analytics_tag') or canonical.get('web_analytics_tag') or latest.get('web_analytics_tag')
+          token=cfg.get('web_analytics_token') or canonical.get('web_analytics_token') or latest.get('web_analytics_token')
+          if not tag or not token:
+              raise SystemExit('Analytics configuration is not present; refusing to redeploy.')
+          print('analytics_config=present')
+          PY
+
+          curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT}/deployments" -o /tmp/deployments.json
+          dep_id=$(python3 - /tmp/deployments.json <<'PY'
+          import json, sys
+          rows=json.load(open(sys.argv[1])).get('result') or []
+          for d in rows:
+              if d.get('environment')=='production':
+                  print(d.get('id') or '')
+                  break
+          else:
+              raise SystemExit('No production deployment found.')
+          PY
+          )
+
+          curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT}/deployments/${dep_id}" -o /tmp/dep.json
+          python3 - /tmp/dep.json /tmp/manifest.json <<'PY'
+          import json, sys
+          d=(json.load(open(sys.argv[1])).get('result') or {})
+          files=d.get('files') or {}
+          if not isinstance(files, dict) or not files:
+              raise SystemExit('Current deployment file manifest is empty; refusing to redeploy.')
+          json.dump(files, open(sys.argv[2],'w'), separators=(',',':'), sort_keys=True)
+          print(f'source_deployment={d.get("id")}')
+          print(f'manifest_files={len(files)}')
+          PY
+
+          before=$(curl -fsSL --compressed "https://${PROJECT}.pages.dev/?before_analytics=$(date +%s%N)" | sha256sum | awk '{print $1}')
+          echo "before_html_sha256=${before}"
+
+          http=$(curl -sS -o /tmp/create.json -w '%{http_code}' -X POST "${auth[@]}" \
+            "${api}/pages/projects/${PROJECT}/deployments" \
+            --form-string 'branch=main' \
+            --form-string 'commit_dirty=false' \
+            --form-string 'commit_message=Activate Cloudflare Web Analytics without changing site assets' \
+            --form-string "manifest=$(cat /tmp/manifest.json)")
+
+          if [ "$http" -lt 200 ] || [ "$http" -ge 300 ]; then
+            echo "Create deployment failed HTTP ${http}"
+            python3 - /tmp/create.json <<'PY'
+          import json, sys
+          try:
+              d=json.load(open(sys.argv[1]))
+              for e in d.get('errors',[]): print(f"error code={e.get('code')} message={e.get('message')}")
+          except Exception: pass
+          PY
+            exit 1
+          fi
+
+          new_id=$(python3 - /tmp/create.json <<'PY'
+          import json, sys
+          print((json.load(open(sys.argv[1])).get('result') or {}).get('id') or '')
+          PY
+          )
+          [ -n "$new_id" ] || { echo 'No new deployment id'; exit 1; }
+          echo "new_deployment=${new_id}"
+
+          final=''
+          for i in $(seq 1 60); do
+            sleep 2
+            curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT}/deployments/${new_id}" -o /tmp/status.json || continue
+            final=$(python3 - /tmp/status.json <<'PY'
+          import json, sys
+          r=json.load(open(sys.argv[1])).get('result') or {}
+          print(((r.get('latest_stage') or {}).get('status')) or '')
+          PY
+          )
+            case "$final" in success|failure|canceled) break;; esac
+          done
+          [ "$final" = success ] || { echo "deployment_status=${final:-timeout}"; exit 1; }
+
+          html=$(mktemp)
+          for i in $(seq 1 20); do
+            curl -fsSL --compressed "https://${PROJECT}.pages.dev/?analytics_verify=$(date +%s%N)" -o "$html"
+            if grep -Eqi 'static\.cloudflareinsights\.com/beacon\.min\.js|data-cf-beacon' "$html"; then
+              echo 'LIVE PASS: Cloudflare Web Analytics beacon is present on production.'
+              exit 0
+            fi
+            sleep 3
+          done
+          echo 'LIVE FAIL: production is live but analytics beacon was not found.'
+          exit 1
