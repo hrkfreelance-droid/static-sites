@@ -34,21 +34,22 @@ jobs:
           r=data.get('result') or {}
           print('deployment_id=', r.get('id'))
           print('top_level_keys=', sorted(r.keys()))
-          for key in ['manifest','aliases','url','environment','production_branch','source','deployment_trigger','build_config']:
-              val=r.get(key)
-              if key=='manifest' and isinstance(val,dict):
-                  print('manifest_present=true')
-                  print('manifest_entries=', len(val))
-                  for p,h in list(sorted(val.items()))[:30]:
-                      print(f'manifest_sample path={p} hash={h}')
-              elif key=='manifest':
-                  print('manifest_present=', val is not None)
-              elif key in ['source','deployment_trigger','build_config']:
-                  if isinstance(val,dict):
-                      safe={k:v for k,v in val.items() if 'token' not in k.lower() and 'secret' not in k.lower()}
-                      print(f'{key}={safe}')
-                  else:
-                      print(f'{key}={val}')
-              else:
-                  print(f'{key}={val}')
+          files=r.get('files')
+          print('files_type=', type(files).__name__)
+          if isinstance(files, dict):
+              print('files_count=', len(files))
+              for p,v in list(sorted(files.items()))[:50]:
+                  print(f'file path={p} value={v}')
+          elif isinstance(files, list):
+              print('files_count=', len(files))
+              for v in files[:50]: print('file=',v)
+          else:
+              print('files_value=', files)
+          print('url=', r.get('url'))
+          print('environment=', r.get('environment'))
+          print('production_branch=', r.get('production_branch'))
+          print('deployment_trigger=', r.get('deployment_trigger'))
+          cfg=r.get('build_config') or {}
+          safe={k:v for k,v in cfg.items() if 'token' not in k.lower() and 'secret' not in k.lower()}
+          print('build_config=',safe)
           PY
