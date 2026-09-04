@@ -213,18 +213,10 @@ html[data-lang="en"] .ja-only{display:none!important}
 .type-card__sample--svg{display:flex;align-items:center;min-height:150px;color:inherit}
 .type-card__sample--svg img{display:block;width:min(100%,360px);height:auto}
 .type-card[data-font="palatino"] .type-card__sample{font-family:Palatino,"Palatino Linotype","Book Antiqua",serif;font-weight:600}
-.type-card.is-missing .type-card__sample:not(.type-card__sample--svg){font-family:inherit!important;font-weight:600!important;color:transparent;position:relative;user-select:none}
-.type-card.is-missing .type-card__sample:not(.type-card__sample--svg)::after{content:"PREVIEW HIDDEN\AFont not installed on this device";white-space:pre;position:absolute;inset:0;color:var(--muted);font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:var(--fs-sm);line-height:1.7;letter-spacing:.08em;text-transform:uppercase}
 .type-card__meta{border-top:1px solid var(--line);padding-top:18px;margin-top:var(--sp-2)}
 .type-card__name{font-size:var(--fs-h3);font-weight:600;line-height:1.3}
 .type-card__use{font-size:var(--fs-sm);color:var(--muted);margin-top:5px}
-.type-card__actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px}
-.font-status{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.font-status::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--line);margin-right:7px;vertical-align:1px}
-.type-card.is-installed .font-status{color:var(--accent-ui)}
-.type-card.is-installed .font-status::before{background:var(--accent-ui)}
-.font-status--embedded{color:var(--accent-ui)}
-.font-status--embedded::before{background:var(--accent-ui)}
+.type-card__actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:18px}
 .font-link{font-size:10px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:3px}
 .font-note{margin-top:var(--sp-2);padding:18px 20px;background:var(--warn-bg);color:var(--warn);font-size:var(--fs-sm);line-height:1.75}
 
@@ -364,7 +356,7 @@ html[data-lang="en"] .ja-only{display:none!important}
 <header class="topbar" id="topbar">
   <span class="topbar__brand" aria-label="MATCHA TIMES"><img class="topbar__logo topbar__logo--green" src="assets/logo-horizontal-green.svg" alt="MATCHA TIMES"><img class="topbar__logo topbar__logo--white" src="assets/logo-horizontal-white.svg" alt="" aria-hidden="true"></span>
 <div class="topbar__actions">
-    <button class="ui-btn" id="langToggle" type="button" aria-label="Switch language">EN</button>
+    <button class="ui-btn" id="langToggle" type="button" aria-label="日本語に切り替え">日本語</button>
 </div>
 </header>
 <div class="indicator" id="indicator" aria-hidden="true"><strong id="indNum">01</strong><span>/</span><span>04</span></div>
@@ -373,11 +365,11 @@ html[data-lang="en"] .ja-only{display:none!important}
 <section class="hero" id="hero" data-dark="1">
   <div class="wrap">
     <div class="hero__inner">
-      <p class="hero__meta reveal">FRANCHISE BRAND GUIDE · 2026</p>
-      <h1 class="hero__title reveal" data-d="1">Brand<br>Standards</h1>
+      <p class="hero__meta reveal"><span class="ja-only">FC BRAND GUIDE · 2026</span><span class="en-only">FRANCHISE BRAND GUIDE · 2026</span></p>
+      <h1 class="hero__title reveal" data-d="1"><span class="ja-only">ブランド<br>ガイド</span><span class="en-only">Brand<br>Standards</span></h1>
       <div class="hero__foot">
-        <p class="hero__sub reveal" data-d="2"><span class="ja-only">For franchise stores &amp; production partners.<br>FC店舗・制作パートナー向け。</span><span class="en-only">For franchise stores &amp; production partners.</span></p>
-        <p class="hero__scroll reveal" data-d="3"><i></i>Scroll</p>
+        <p class="hero__sub reveal" data-d="2"><span class="ja-only">FC店舗・制作パートナー向けのブランドガイドです。</span><span class="en-only">Brand standards for franchise stores and production partners.</span></p>
+        <p class="hero__scroll reveal" data-d="3"><i></i><span class="ja-only">スクロール</span><span class="en-only">Scroll</span></p>
       </div>
     </div>
   </div>
@@ -385,42 +377,42 @@ html[data-lang="en"] .ja-only{display:none!important}
 
 <section class="sec" id="s01" data-num="01">
   <div class="wrap">
-    <p class="eyebrow reveal">01<i></i>Logo</p>
-    <h2 class="h2 reveal" data-d="1">Use the master artwork.</h2>
-    <p class="intro reveal" data-d="2"><span class="ja-only">Do not rebuild, retype or distort the logo. ロゴ色は 3435 C / White のみ。</span><span class="en-only">Do not rebuild, retype or distort the logo. Use only 3435 C or white.</span></p>
+    <p class="eyebrow reveal">01<i></i><span class="ja-only">ロゴ</span><span class="en-only">Logo</span></p>
+    <h2 class="h2 reveal" data-d="1"><span class="ja-only">支給データをそのまま使用。</span><span class="en-only">Use the master artwork.</span></h2>
+    <p class="intro reveal" data-d="2"><span class="ja-only">ロゴの再作成・文字打ち・変形は禁止。使用色は PANTONE 3435 C または白のみ。</span><span class="en-only">Do not rebuild, retype or distort the logo. Use only PANTONE 3435 C or white.</span></p>
 
     <div class="logo-preview reveal">
       <div class="logo-preview__item logo-preview__item--green"><img src="assets/logo-vertical-white.svg" alt="MATCHA TIMES white logo on dark green"></div>
       <div class="logo-preview__item"><img src="assets/logo-vertical-green.svg" alt="MATCHA TIMES PANTONE 3435 C logo"></div>
-      <p class="logo-preview__caption">White logo / PANTONE 3435 C</p>
-      <p class="logo-preview__caption logo-preview__caption--right">PANTONE 3435 C / Off-white or white</p>
+      <p class="logo-preview__caption"><span class="ja-only">白ロゴ / PANTONE 3435 C 背景</span><span class="en-only">White logo / PANTONE 3435 C background</span></p>
+      <p class="logo-preview__caption logo-preview__caption--right"><span class="ja-only">PANTONE 3435 C ロゴ / 白または淡色背景</span><span class="en-only">PANTONE 3435 C logo / White or light background</span></p>
     </div>
 
 
     <div class="logo-downloads reveal">
       <div class="logo-downloads__head">
-        <strong>Logo Assets</strong>
-        <span class="ja-only">支給SVG / 縦・横</span><span class="en-only">Master SVG / vertical &amp; horizontal</span>
+        <strong><span class="ja-only">ロゴデータ</span><span class="en-only">Logo Assets</span></strong>
+        <span class="ja-only">SVG / 縦・横</span><span class="en-only">SVG / Vertical &amp; Horizontal</span>
       </div>
       <div class="logo-downloads__grid">
         <a class="logo-download" href="assets/logo-vertical-green.svg" download="MATCHA_TIMES_Logo_Vertical_Green.svg">
-          <span><span class="logo-download__name">Vertical · Green</span><br><span class="logo-download__meta">SVG</span></span>
+          <span><span class="logo-download__name"><span class="ja-only">縦 · グリーン</span><span class="en-only">Vertical · Green</span></span><br><span class="logo-download__meta">SVG</span></span>
         </a>
         <a class="logo-download" href="assets/logo-vertical-white.svg" download="MATCHA_TIMES_Logo_Vertical_White.svg">
-          <span><span class="logo-download__name">Vertical · White</span><br><span class="logo-download__meta">SVG</span></span>
+          <span><span class="logo-download__name"><span class="ja-only">縦 · ホワイト</span><span class="en-only">Vertical · White</span></span><br><span class="logo-download__meta">SVG</span></span>
         </a>
         <a class="logo-download" href="assets/logo-horizontal-green.svg" download="MATCHA_TIMES_Logo_Horizontal_Green.svg">
-          <span><span class="logo-download__name">Horizontal · Green</span><br><span class="logo-download__meta">SVG</span></span>
+          <span><span class="logo-download__name"><span class="ja-only">横 · グリーン</span><span class="en-only">Horizontal · Green</span></span><br><span class="logo-download__meta">SVG</span></span>
         </a>
         <a class="logo-download" href="assets/logo-horizontal-white.svg" download="MATCHA_TIMES_Logo_Horizontal_White.svg">
-          <span><span class="logo-download__name">Horizontal · White</span><br><span class="logo-download__meta">SVG</span></span>
+          <span><span class="logo-download__name"><span class="ja-only">横 · ホワイト</span><span class="en-only">Horizontal · White</span></span><br><span class="logo-download__meta">SVG</span></span>
         </a>
       </div>
     </div>
 
     <div class="do-grid">
       <div class="do-col do-col--yes reveal">
-        <h3 class="do-col__head"><span class="ja-only">DO / してよいこと</span><span class="en-only">DO</span></h3>
+        <h3 class="do-col__head"><span class="ja-only">推奨</span><span class="en-only">DO</span></h3>
         <ul>
           <li><span class="ja-only">濃緑の地に白のロゴを置く</span><span class="en-only">Place the white logo on the approved dark green background.</span></li>
           <li><span class="ja-only">白または淡色の地に 3435 C のロゴを置く</span><span class="en-only">Place the 3435 C logo on white or an approved light background.</span></li>
@@ -429,7 +421,7 @@ html[data-lang="en"] .ja-only{display:none!important}
         </ul>
       </div>
       <div class="do-col do-col--no reveal" data-d="1">
-        <h3 class="do-col__head"><span class="ja-only">DO NOT / してはいけないこと</span><span class="en-only">DO NOT</span></h3>
+        <h3 class="do-col__head"><span class="ja-only">禁止</span><span class="en-only">DO NOT</span></h3>
         <ul>
           <li><span class="ja-only">緑と白以外へ色を変更する</span><span class="en-only">Do not change the logo to colours other than approved green and white.</span></li>
           <li><span class="ja-only">写真の上へ直接置く</span><span class="en-only">Do not place the logo directly over photography.</span></li>
@@ -444,13 +436,13 @@ html[data-lang="en"] .ja-only{display:none!important}
 
 <section class="sec" id="s02" data-num="02">
   <div class="wrap">
-    <p class="eyebrow reveal">02<i></i>Brand Colour</p>
+    <p class="eyebrow reveal">02<i></i><span class="ja-only">ブランドカラー</span><span class="en-only">Brand Colour</span></p>
     <h2 class="h2 reveal" data-d="1">PANTONE 3435 C.</h2>
-    <p class="intro reveal" data-d="2"><span class="ja-only">ブランドカラーは PANTONE 3435 C。RGB / CMYK は下記を使用。</span><span class="en-only">Brand colour: PANTONE 3435 C. Use the RGB / CMYK values below.</span></p>
+    <p class="intro reveal" data-d="2"><span class="ja-only">ブランドカラーは PANTONE 3435 C に統一。デジタル・印刷では下記の RGB / CMYK を使用してください。</span><span class="en-only">Use PANTONE 3435 C as the brand colour. Use the RGB / CMYK values below for digital and print production.</span></p>
 
     <div class="color-master">
       <div class="swatch reveal" data-d="2">
-        <p class="swatch__label">Brand Colour</p>
+        <p class="swatch__label"><span class="ja-only">ブランドカラー</span><span class="en-only">Brand Colour</span></p>
         <p class="swatch__code">PANTONE<br>3435 C</p>
       </div>
       <aside class="formula reveal" data-d="3">
@@ -465,9 +457,9 @@ html[data-lang="en"] .ja-only{display:none!important}
 
 <section class="sec" id="s03" data-num="03">
   <div class="wrap">
-    <p class="eyebrow reveal">03<i></i>Typography</p>
-    <h2 class="h2 reveal" data-d="1">Three typefaces.<br>Fixed roles.</h2>
-    <p class="intro reveal" data-d="2"><span class="ja-only">Use each typeface only for its assigned role. 用途を入れ替えない。</span><span class="en-only">Use each typeface only for its assigned role.</span></p>
+    <p class="eyebrow reveal">03<i></i><span class="ja-only">書体</span><span class="en-only">Typography</span></p>
+    <h2 class="h2 reveal" data-d="1"><span class="ja-only">使用書体は3種類。<br>用途を固定。</span><span class="en-only">Three typefaces.<br>Fixed roles.</span></h2>
+    <p class="intro reveal" data-d="2"><span class="ja-only">各書体は指定された用途にのみ使用してください。</span><span class="en-only">Use each typeface only for its assigned role.</span></p>
 
     <div class="type-grid">
       <article class="type-card reveal" data-font="tetsubin">
@@ -476,7 +468,7 @@ html[data-lang="en"] .ja-only{display:none!important}
         <div class="type-card__meta">
           <h3 class="type-card__name"><span class="ja-only">07鉄瓶ゴシック</span><span class="en-only">07 Tetsubin Gothic</span></h3>
           <p class="type-card__use"><span class="ja-only">ロゴタイプ / 店名表記</span><span class="en-only">Logotype / Store name</span></p>
-          <div class="type-card__actions"><span class="font-status font-status--embedded">Embedded SVG preview</span><a class="font-link" href="https://booth.pm/ja/items/3970314" target="_blank" rel="noopener">Get font ↗</a></div>
+          <div class="type-card__actions"><a class="font-link" href="https://booth.pm/ja/items/3970314" target="_blank" rel="noopener"><span class="ja-only">フォント入手先 ↗</span><span class="en-only">Font source ↗</span></a></div>
         </div>
       </article>
 
@@ -486,7 +478,7 @@ html[data-lang="en"] .ja-only{display:none!important}
         <div class="type-card__meta">
           <h3 class="type-card__name">Palatino Bold</h3>
           <p class="type-card__use"><span class="ja-only">タグライン / 英文見出し</span><span class="en-only">Tagline / English headings</span></p>
-          <div class="type-card__actions"><span class="font-status">Checking font</span><a class="font-link" href="https://zapf-alphabets.com/fonts/palatino/" target="_blank" rel="noopener">Get / license ↗</a></div>
+          <div class="type-card__actions"><a class="font-link" href="https://zapf-alphabets.com/fonts/palatino/" target="_blank" rel="noopener"><span class="ja-only">ライセンス・入手先 ↗</span><span class="en-only">License / source ↗</span></a></div>
         </div>
       </article>
       <article class="type-card reveal" data-d="2">
@@ -495,7 +487,7 @@ html[data-lang="en"] .ja-only{display:none!important}
         <div class="type-card__meta">
           <h3 class="type-card__name">Get Show</h3>
           <p class="type-card__use"><span class="ja-only">「Thank you so Matcha」マーク専用</span><span class="en-only">“Thank you so Matcha” mark</span></p>
-          <div class="type-card__actions"><span class="font-status font-status--embedded">SVG preview</span><a class="font-link" href="https://www.dafont.com/get-show.font" target="_blank" rel="noopener">Get font ↗</a></div>
+          <div class="type-card__actions"><a class="font-link" href="https://www.dafont.com/get-show.font" target="_blank" rel="noopener"><span class="ja-only">フォント入手先 ↗</span><span class="en-only">Font source ↗</span></a></div>
         </div>
       </article>
     </div>
@@ -506,14 +498,14 @@ html[data-lang="en"] .ja-only{display:none!important}
 
 <section class="sec sec--green" id="s04" data-num="04" data-dark="1">
   <div class="wrap">
-    <p class="eyebrow reveal">04<i></i>Interior Paint</p>
-    <h2 class="h2 reveal" data-d="1">Match the physical 3435 C chip.</h2>
-    <p class="intro reveal" data-d="2"><span class="ja-only">The physical PANTONE 3435 C chip is the master. 塗料は現物チップの発色に合わせて選定・調合します。</span><span class="en-only">Use the physical PANTONE 3435 C chip as the master reference. Select or custom-mix paint to match it.</span></p>
+    <p class="eyebrow reveal">04<i></i><span class="ja-only">内装塗装</span><span class="en-only">Interior Paint</span></p>
+    <h2 class="h2 reveal" data-d="1"><span class="ja-only">現物の 3435 C チップに合わせる。</span><span class="en-only">Match the physical 3435 C chip.</span></h2>
+    <p class="intro reveal" data-d="2"><span class="ja-only">PANTONE 3435 C の現物チップを基準に、塗料を選定・調色してください。</span><span class="en-only">Use the physical PANTONE 3435 C chip as the master reference. Select or custom-mix paint to match it.</span></p>
     <ol class="paint-steps">
-      <li class="paint-step reveal"><strong>Physical chip</strong><p><span class="ja-only">画面や印刷した見本ではなく、PANTONE 3435 C の現物チップを使用。</span><span class="en-only">Use the physical PANTONE 3435 C chip, not a screen or printed screenshot.</span></p></li>
-      <li class="paint-step reveal" data-d="1"><strong>Match in daylight</strong><p><span class="ja-only">自然光で色合わせ。既製色または調色で 3435 C に合わせる。</span><span class="en-only">Match in daylight. Use ready-mixed or custom-tinted paint to reach the 3435 C appearance.</span></p></li>
-      <li class="paint-step reveal" data-d="2"><strong>Test after drying</strong><p><span class="ja-only">試し塗りし、完全乾燥後に現物チップと比較。</span><span class="en-only">Apply a test area and compare with the physical chip after the paint is fully dry.</span></p></li>
-      <li class="paint-step reveal" data-d="3"><strong>Matte finish only.</strong><p><span class="ja-only">仕上げはつや消しのみ。光沢・半光沢は使用しない。</span><span class="en-only">Use a matte finish only. Do not use gloss or semi-gloss finishes.</span></p></li>
+      <li class="paint-step reveal"><strong><span class="ja-only">現物チップ</span><span class="en-only">Physical chip</span></strong><p><span class="ja-only">画面や印刷見本ではなく、PANTONE 3435 C の現物チップを使用してください。</span><span class="en-only">Use the physical PANTONE 3435 C chip, not a screen or printed reference.</span></p></li>
+      <li class="paint-step reveal" data-d="1"><strong><span class="ja-only">自然光で色合わせ</span><span class="en-only">Match in daylight</span></strong><p><span class="ja-only">自然光で確認し、既製色または調色で 3435 C の発色に合わせてください。</span><span class="en-only">Match in daylight. Use ready-mixed or custom-tinted paint to reach the 3435 C appearance.</span></p></li>
+      <li class="paint-step reveal" data-d="2"><strong><span class="ja-only">乾燥後に確認</span><span class="en-only">Check after drying</span></strong><p><span class="ja-only">必ず試し塗りを行い、完全乾燥後に現物チップと比較してください。</span><span class="en-only">Apply a test area and compare with the physical chip after the paint is fully dry.</span></p></li>
+      <li class="paint-step reveal" data-d="3"><strong><span class="ja-only">つや消しのみ</span><span class="en-only">Matte finish only</span></strong><p><span class="ja-only">仕上げはつや消しのみ。光沢・半光沢は使用しないでください。</span><span class="en-only">Use a matte finish only. Do not use gloss or semi-gloss finishes.</span></p></li>
     </ol>
   </div>
 </section>
@@ -523,7 +515,7 @@ html[data-lang="en"] .ja-only{display:none!important}
 
 <footer class="foot" data-dark="1">
   <div class="wrap">
-    <div class="foot__in"><span>MATCHA TIMES · HEADQUARTERS</span><span>Franchise Brand Guide / 2026</span></div>
+    <div class="foot__in"><span><span class="ja-only">MATCHA TIMES · 本部</span><span class="en-only">MATCHA TIMES · HEADQUARTERS</span></span><span><span class="ja-only">FC ブランドガイド / 2026</span><span class="en-only">Franchise Brand Guide / 2026</span></span></div>
     <div class="foot__utility"><a class="foot__link" href="https://matcha-times-japan.pages.dev/" target="_blank" rel="noopener">matcha-times-japan.pages.dev</a></div>
   </div>
 </footer>
@@ -541,7 +533,7 @@ html[data-lang="en"] .ja-only{display:none!important}
     root.setAttribute('data-lang',lang);
     root.setAttribute('lang',lang);
     try{localStorage.setItem('mt-brand-lang-v2',lang)}catch(e){}
-    if(langToggle){langToggle.textContent=lang==='ja'?'EN':'JP';langToggle.setAttribute('aria-label',lang==='ja'?'Switch to English':'日本語に切り替え')}
+    if(langToggle){langToggle.textContent=lang==='ja'?'EN':'日本語';langToggle.setAttribute('aria-label',lang==='ja'?'Switch to English':'日本語に切り替え')}
   }
   var savedLang='en';
   try{savedLang=localStorage.getItem('mt-brand-lang-v2')||'en'}catch(e){}
@@ -599,25 +591,6 @@ html[data-lang="en"] .ja-only{display:none!important}
     });
   });
 
-  function fontAvailable(names){
-    if(!document.fonts||!document.fonts.check)return false;
-    return names.some(function(name){try{return document.fonts.check("32px '"+name+"'")}catch(e){return false}});
-  }
-  var probes={
-    tetsubin:['07鉄瓶ゴシック','07TetsubinGothic'],
-    palatino:['Palatino','Palatino Linotype'],
-  };
-  document.querySelectorAll('.type-card[data-font]').forEach(function(card){
-    var key=card.getAttribute('data-font');
-    if(key==='tetsubin'){
-      card.classList.add('is-installed');
-      return;
-    }
-    var ok=fontAvailable(probes[key]||[]);
-    card.classList.add(ok?'is-installed':'is-missing');
-    var status=card.querySelector('.font-status');
-    if(status)status.textContent=ok?'Installed / live preview':'Not installed';
-  });
 })();
 </script>
 </body>
