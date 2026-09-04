@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>WORK / FLOW / NULL</title>
+<meta name="description" content="A Swiss-minimal abstract web artwork about optimization, automation and the disappearance of purpose.">
+<meta name="theme-color" content="#f1efe7">
+<style>
+:root{
+  --paper:#f1efe7;
+  --ink:#11120f;
+  --green:#0f3a2b;
+  --ghost:rgba(17,18,15,.12);
+  --soft:rgba(17,18,15,.54);
+  --max:1480px;
+  --gut:clamp(18px,3.8vw,58px);
+  --gap:clamp(10px,1.5vw,22px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+::selection{background:var(--green);color:#fff}
+.progress{position:fixed;left:0;top:0;width:100%;height:2px;z-index:100;pointer-events:none}.progress i{display:block;height:100%;width:0;background:var(--green)}
+.shell{width:min(100%,var(--max));margin:auto;padding-inline:var(--gut)}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--gap)}
+.micro{font-size:10px;line-height:1.2;letter-spacing:.18em;text-transform:uppercase}
+.muted{color:var(--soft)}
+.rule{border-top:1px solid var(--ink)}
+
+.hero{min-height:100svh;padding:24px 0 32px;display:flex;align-items:stretch}
+.hero .shell{display:flex;flex-direction:column;justify-content:space-between}
+.heroTop{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.heroTop .right{text-align:right}
+.heroTitle{margin:10vh 0 5vh;font-size:clamp(62px,13.6vw,208px);line-height:.75;letter-spacing:-.065em;font-weight:500;text-transform:uppercase;max-width:7.2ch}
+.heroTitle span{display:block}.heroTitle .indent{margin-left:1.12ch}.heroTitle .thin{font-weight:300;color:var(--green)}
+.heroFoot{align-items:end;border-top:1px solid var(--ink);padding-top:14px}
+.heroFoot .statement{grid-column:1/span 5;font-size:clamp(18px,2vw,30px);line-height:1.12;letter-spacing:-.035em;max-width:18ch}
+.heroFoot .code{grid-column:7/span 2}
+.heroFoot .axis{grid-column:10/span 3;text-align:right}
+
+.manifest{padding:18vh 0 20vh}
+.manifest .intro{grid-column:1/span 7;font-size:clamp(34px,6vw,92px);line-height:.94;letter-spacing:-.05em;font-weight:400}
+.manifest .aside{grid-column:10/span 3;display:flex;flex-direction:column;justify-content:flex-end;gap:36px}
+.spaced{letter-spacing:.48em;word-spacing:.55em;text-transform:uppercase}
+
+.field{padding:0 0 18vh}
+.fieldHead{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;border-bottom:1px solid var(--ink);margin-bottom:var(--gap)}
+.artgrid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:minmax(38px,4.4vw);gap:var(--gap)}
+.panel{position:relative;overflow:hidden;background:#d8d7cf;border:1px solid rgba(17,18,15,.18)}
+.panel svg{width:100%;height:100%;display:block}
+.panel .cap{position:absolute;left:10px;bottom:8px;z-index:3;font-size:9px;letter-spacing:.16em;text-transform:uppercase;mix-blend-mode:difference;color:#fff}
+.p1{grid-column:1/span 7;grid-row:span 9}
+.p2{grid-column:9/span 4;grid-row:span 5;margin-top:7vh}
+.p3{grid-column:3/span 4;grid-row:span 6;margin-top:5vh}
+.p4{grid-column:8/span 5;grid-row:span 8;margin-top:-3vh}
+.p5{grid-column:1/span 3;grid-row:span 4;margin-top:9vh}
+.panel::after{content:"";position:absolute;inset:0;border:1px solid rgba(255,255,255,.22);pointer-events:none}
+
+.system{background:var(--green);color:#fff;padding:16vh 0 15vh}
+.system .head{grid-column:1/span 5;font-size:clamp(42px,7vw,104px);line-height:.85;letter-spacing:-.05em;font-weight:400;text-transform:uppercase}
+.system .ghost{grid-column:8/span 5;font-size:11px;line-height:2;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.56);padding-top:6px}
+.matrix{margin-top:14vh;border-top:1px solid rgba(255,255,255,.45)}
+.row{display:grid;grid-template-columns:1fr 2.2fr 1.2fr 1fr;gap:var(--gap);padding:14px 0;border-bottom:1px solid rgba(255,255,255,.22);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+.row strong{font-weight:400;font-size:clamp(20px,3vw,44px);letter-spacing:-.035em;text-transform:none;line-height:.9}
+.row .void{color:rgba(255,255,255,.34)}
+
+.interrupt{padding:21vh 0 22vh;position:relative}
+.interrupt .big{grid-column:2/span 9;font-size:clamp(52px,10vw,156px);line-height:.78;letter-spacing:-.06em;font-weight:300;text-transform:uppercase}
+.interrupt .big .shift{display:block;margin-left:18%;color:var(--green)}
+.interrupt .smallA{grid-column:1/span 3;margin-top:12vh}
+.interrupt .smallB{grid-column:9/span 4;margin-top:4vh;font-size:clamp(18px,2vw,28px);line-height:1.25;letter-spacing:-.02em}
+
+.final{min-height:92svh;padding:12vh 0 28px;display:flex;align-items:stretch}
+.final .shell{display:flex;flex-direction:column;justify-content:space-between}
+.finalGlyph{font-size:clamp(110px,28vw,430px);font-weight:200;line-height:.7;letter-spacing:-.08em;color:var(--green);margin-left:-.04em}
+.finalFoot{border-top:1px solid var(--ink);padding-top:12px;display:flex;justify-content:space-between;gap:20px;align-items:end}
+.finalFoot .end{font-size:clamp(18px,2vw,28px);letter-spacing:-.03em;max-width:19ch}
+
+@media(max-width:760px){
+  .hero{padding-top:18px}.heroTitle{margin:13vh 0 8vh;font-size:clamp(62px,20vw,102px);line-height:.78}.heroTitle .indent{margin-left:.58ch}
+  .heroFoot .statement{grid-column:1/span 8}.heroFoot .code{grid-column:10/span 3}.heroFoot .axis{display:none}
+  .manifest{padding:14vh 0 15vh}.manifest .intro{grid-column:1/-1;font-size:clamp(38px,12vw,66px)}.manifest .aside{grid-column:4/-1;margin-top:16vh}
+  .artgrid{grid-auto-rows:minmax(34px,12vw)}.p1{grid-column:1/span 10;grid-row:span 7}.p2{grid-column:5/span 8;grid-row:span 5;margin-top:4vh}.p3{grid-column:1/span 6;grid-row:span 5}.p4{grid-column:4/span 9;grid-row:span 6;margin-top:0}.p5{grid-column:1/span 5;grid-row:span 4;margin-top:2vh}
+  .system{padding:12vh 0}.system .head{grid-column:1/-1}.system .ghost{grid-column:5/-1;margin-top:9vh}.matrix{margin-top:10vh}.row{grid-template-columns:1fr 1.7fr}.row>*:nth-child(3),.row>*:nth-child(4){display:none}
+  .interrupt{padding:16vh 0 18vh}.interrupt .big{grid-column:1/-1}.interrupt .smallA{grid-column:1/span 5}.interrupt .smallB{grid-column:6/-1;margin-top:18vh}
+  .final{min-height:82svh}.finalGlyph{font-size:54vw}.finalFoot{align-items:flex-start}.finalFoot .micro{text-align:right;max-width:16ch}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="progress"><i></i></div>
+
+<header class="hero">
+  <div class="shell">
+    <div class="heroTop micro">
+      <div>WF//NULL<br>STUDY 09.26</div>
+      <div class="right">PROCESS OBJECT<br>NO OWNER / NO END</div>
+    </div>
+    <h1 class="heroTitle"><span>WORK</span><span class="indent thin">FLOW</span><span>NULL</span></h1>
+    <div class="heroFoot grid">
+      <div class="statement">Optimize the route until the destination disappears.</div>
+      <div class="code micro muted">Λ-04.77<br>∆ 000.8<br>Q/13</div>
+      <div class="axis micro">human delay = unknown<br>output silence = stable</div>
+    </div>
+  </div>
+</header>
+
+<section class="manifest">
+  <div class="shell grid">
+    <div class="intro">Every shortcut builds another corridor.</div>
+    <div class="aside micro">
+      <div class="spaced">system / system / system</div>
+      <div class="muted">The process remains.<br>The purpose is compressed.<br>Touch becomes latency.<br>Meaning waits off-screen.</div>
+      <div>機械　→　手　→　機械<br>完了は　未定義</div>
+    </div>
+  </div>
+</section>
+
+<section class="field">
+  <div class="shell">
+    <div class="fieldHead micro"><span>ART FIELD / 001—005</span><span>NO EXPLANATION REQUIRED</span></div>
+    <div class="artgrid">
+      <figure class="panel p1">
+        <svg viewBox="0 0 900 620" preserveAspectRatio="none" aria-label="abstract black and green process field">
+          <defs><filter id="n1"><feTurbulence type="fractalNoise" baseFrequency=".012 .08" numOctaves="3" seed="11"/><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .24 0"/></filter></defs>
+          <rect width="900" height="620" fill="#e6e3d8"/>
+          <rect x="0" y="0" width="520" height="620" fill="#11120f"/>
+          <circle cx="485" cy="310" r="214" fill="#0f3a2b"/>
+          <rect x="468" y="0" width="15" height="620" fill="#e6e3d8"/>
+          <rect x="610" y="94" width="220" height="18" fill="#11120f"/>
+          <rect x="610" y="144" width="150" height="8" fill="#11120f"/>
+          <rect x="610" y="484" width="170" height="56" fill="#11120f"/>
+          <rect width="900" height="620" filter="url(#n1)" opacity=".45"/>
+        </svg>
+        <figcaption class="cap">[01] corridor memory / 06.4ms</figcaption>
+      </figure>
+      <figure class="panel p2">
+        <svg viewBox="0 0 500 500" preserveAspectRatio="none" aria-label="abstract geometric module">
+          <rect width="500" height="500" fill="#11120f"/>
+          <path d="M0 410 L500 40 L500 500 L0 500Z" fill="#f1efe7"/>
+          <rect x="52" y="54" width="9" height="335" fill="#f1efe7"/>
+          <rect x="87" y="54" width="132" height="12" fill="#f1efe7"/>
+          <circle cx="352" cy="145" r="66" fill="#0f3a2b"/>
+        </svg>
+        <figcaption class="cap">[02] latent task</figcaption>
+      </figure>
+      <figure class="panel p3">
+        <svg viewBox="0 0 500 640" preserveAspectRatio="none" aria-label="abstract typographic machine field">
+          <rect width="500" height="640" fill="#d8d7cf"/>
+          <g fill="none" stroke="#11120f" stroke-width="2">
+            <circle cx="125" cy="150" r="82"/><circle cx="125" cy="150" r="52"/><circle cx="125" cy="150" r="18"/>
+            <path d="M0 350 H500 M250 0 V640 M46 430 H454 M46 480 H454 M46 530 H454"/>
+          </g>
+          <rect x="296" y="82" width="142" height="185" fill="#0f3a2b"/>
+          <text x="40" y="602" font-size="78" font-family="Helvetica,Arial,sans-serif" fill="#11120f">∴ Λ 0</text>
+        </svg>
+        <figcaption class="cap">[03] body removed</figcaption>
+      </figure>
+      <figure class="panel p4">
+        <svg viewBox="0 0 740 620" preserveAspectRatio="none" aria-label="abstract striped workflow painting">
+          <rect width="740" height="620" fill="#f1efe7"/>
+          <g fill="#11120f">
+            <rect x="0" y="0" width="740" height="70"/><rect x="0" y="116" width="540" height="22"/><rect x="120" y="188" width="620" height="11"/><rect x="0" y="298" width="480" height="114"/><rect x="520" y="448" width="220" height="172"/>
+          </g>
+          <rect x="445" y="78" width="96" height="262" fill="#0f3a2b"/>
+          <path d="M78 485 C190 405, 276 595, 402 492 S596 520, 700 468" fill="none" stroke="#0f3a2b" stroke-width="32"/>
+        </svg>
+        <figcaption class="cap">[04] duplicate route / 4→4→4</figcaption>
+      </figure>
+      <figure class="panel p5">
+        <svg viewBox="0 0 360 360" preserveAspectRatio="none" aria-label="abstract green void">
+          <rect width="360" height="360" fill="#0f3a2b"/>
+          <rect x="35" y="35" width="290" height="290" fill="none" stroke="#f1efe7" stroke-width="1"/>
+          <path d="M35 110 H325 M110 35 V325" stroke="#f1efe7" stroke-width="1"/>
+          <circle cx="226" cy="214" r="74" fill="#11120f"/>
+          <circle cx="226" cy="214" r="16" fill="#f1efe7"/>
+        </svg>
+        <figcaption class="cap">[05] output silence</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="system">
+  <div class="shell">
+    <div class="grid">
+      <div class="head">System<br>for the<br>system.</div>
+      <div class="ghost">// MONITOR START<br>→ task enters task<br>→ task waits for task<br>→ review requests review<br>→ complete != complete<br>→ human hand displaced<br>→ motion preserved<br>→ purpose unavailable</div>
+    </div>
+    <div class="matrix">
+      <div class="row"><span>00</span><strong>friction index</strong><span>0.004</span><span class="void">improving</span></div>
+      <div class="row"><span>01</span><strong>motion debt</strong><span>99.8%</span><span class="void">stable</span></div>
+      <div class="row"><span>02</span><strong>human delay</strong><span>unknown</span><span class="void">removed</span></div>
+      <div class="row"><span>03</span><strong>latent task</strong><span>∞</span><span class="void">queued</span></div>
+      <div class="row"><span>04</span><strong>meaning</strong><span>—</span><span class="void">not measured</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="interrupt">
+  <div class="shell grid">
+    <div class="big">More order.<span class="shift">Less touch.</span></div>
+    <div class="smallA micro spaced">WAIT / REVIEW / REPEAT</div>
+    <div class="smallB">Work becomes visible.<br>Meaning becomes latent.</div>
+  </div>
+</section>
+
+<footer class="final">
+  <div class="shell">
+    <div class="finalGlyph">0̸</div>
+    <div class="finalFoot">
+      <div class="end">Nothing was lost.<br>Nothing arrived.</div>
+      <div class="micro">WF//NULL<br>2026 / PHASE UNDEFINED</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+const bar=document.querySelector('.progress i');
+const tick=()=>{const d=document.documentElement;const max=d.scrollHeight-innerHeight;bar.style.width=(max?scrollY/max*100:0)+'%'};
+addEventListener('scroll',tick,{passive:true});addEventListener('resize',tick);tick();
+</script>
+</body>
+</html>
