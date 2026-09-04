@@ -48,7 +48,7 @@ jobs:
             fi
           }
 
-          request "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects?per_page=100" /tmp/pages.json
+          request "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects" /tmp/pages.json
 
           echo '=== CLOUDFLARE PAGES: MATCHA / MACHIDA ==='
           python3 - /tmp/pages.json <<'PY'
@@ -63,7 +63,8 @@ jobs:
           for p in data.get('result', []):
               name = p.get('name') or ''
               domains = p.get('domains') or []
-              haystack = ' '.join([name, *domains])
+              subdomain = p.get('subdomain') or ''
+              haystack = ' '.join([name, subdomain, *domains])
               if not re.search(r'(matcha|machida)', haystack, re.I):
                   continue
 
@@ -74,13 +75,14 @@ jobs:
 
               has_tag = bool(project_cfg.get('web_analytics_tag') or canonical_cfg.get('web_analytics_tag') or latest_cfg.get('web_analytics_tag'))
               has_token = bool(project_cfg.get('web_analytics_token') or canonical_cfg.get('web_analytics_token') or latest_cfg.get('web_analytics_token'))
-              matched.append((name, domains, p.get('production_branch'), latest.get('url'), has_tag, has_token))
+              matched.append((name, subdomain, domains, p.get('production_branch'), latest.get('url'), has_tag, has_token))
 
           if not matched:
               print('No Pages projects matched matcha/machida.')
           else:
-              for name, domains, branch, latest_url, has_tag, has_token in sorted(matched):
+              for name, subdomain, domains, branch, latest_url, has_tag, has_token in sorted(matched):
                   print(f"project={name}")
+                  print(f"  subdomain={subdomain or '-'}")
                   print(f"  domains={','.join(domains) if domains else '-'}")
                   print(f"  production_branch={branch or '-'}")
                   print(f"  latest_url={latest_url or '-'}")
@@ -89,7 +91,7 @@ jobs:
           PY
 
           echo '=== CLOUDFLARE WEB ANALYTICS SITES: MATCHA / MACHIDA ==='
-          if request "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/rum/site_info/list?per_page=100" /tmp/rum.json; then
+          if request "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/rum/site_info/list" /tmp/rum.json; then
             python3 - /tmp/rum.json <<'PY'
           import json, re, sys
 
