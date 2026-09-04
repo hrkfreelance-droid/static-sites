@@ -302,10 +302,12 @@ html[data-lang="en"] .ja-only{display:none!important}
 
 .foot{background:var(--green);color:rgba(255,255,255,.62);padding:0 0 32px}
 .foot__in{display:flex;justify-content:space-between;gap:16px;border-top:1px solid rgba(255,255,255,.22);padding-top:18px;font-size:10px;letter-spacing:.16em;text-transform:uppercase}
-.foot__utility{display:flex;justify-content:flex-start;align-items:center;margin-top:16px}
-.foot__link{display:inline-flex;align-items:center;gap:.45em;font-size:9.5px;line-height:1.4;letter-spacing:.03em;text-transform:none;color:rgba(255,255,255,.44);text-decoration:none;transition:color .2s ease}
-.foot__link::after{content:"↗";font-size:.92em;opacity:.72;transform:translateY(-.04em)}
-.foot__link:hover{color:rgba(255,255,255,.9)}
+.foot__utility{display:flex;justify-content:flex-start;align-items:center;margin-top:20px}
+.foot__link{display:inline-flex;align-items:center;gap:.65em;padding:11px 15px;border:1px solid rgba(255,255,255,.42);border-radius:999px;font-size:10.5px;font-weight:600;line-height:1;letter-spacing:.04em;text-transform:none;color:rgba(255,255,255,.94);text-decoration:none;transition:background-color .2s ease,color .2s ease,border-color .2s ease,transform .2s ease}
+.foot__link::after{content:"↗";font-size:.92em;opacity:.8;transform:translateY(-.04em)}
+.foot__link:hover{background:#fff;color:var(--green);border-color:#fff;transform:translateY(-1px)}
+.foot__link:focus-visible{outline:2px solid #fff;outline-offset:3px}
+@media(max-width:640px){.foot__link{width:100%;justify-content:space-between;padding:13px 15px}}
 
 @media(max-width:900px){
   .h2,.intro{grid-column:1/-1}
@@ -343,8 +345,6 @@ html[data-lang="en"] .ja-only{display:none!important}
   .indicator{right:20px}
 }
 
-.pdf-link{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:8px 0 8px 14px;color:inherit;white-space:nowrap}
-.pdf-link:hover{opacity:.72}.pdf-link:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 .neutral-detail{margin-top:var(--sp-2);display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);background:var(--offwhite);padding:clamp(24px,4vw,50px)}
 .neutral-detail__main{grid-column:1/span 5;display:flex;min-height:290px;flex-direction:column}
 .neutral-detail__main h3{font-size:clamp(30px,3.6vw,50px);line-height:1.02;letter-spacing:-.035em;margin-top:8px}
@@ -354,7 +354,7 @@ html[data-lang="en"] .ja-only{display:none!important}
 .neutral-detail__row{display:grid;grid-template-columns:minmax(110px,.7fr) 1.3fr;gap:18px;padding:17px 0;border-bottom:1px solid rgba(22,49,40,.16);align-items:baseline}
 .neutral-detail__row span{font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .neutral-detail__row strong{font-size:var(--fs-sm);font-weight:600;text-align:right;line-height:1.5}
-@media(max-width:640px){.neutral-detail{row-gap:42px}.neutral-detail__main,.neutral-detail__spec{grid-column:1/-1}.neutral-detail__main{min-height:245px}.neutral-detail__row{grid-template-columns:1fr}.neutral-detail__row strong{text-align:left}.pdf-link{padding-left:8px}}
+@media(max-width:640px){.neutral-detail{row-gap:42px}.neutral-detail__main,.neutral-detail__spec{grid-column:1/-1}.neutral-detail__main{min-height:245px}.neutral-detail__row{grid-template-columns:1fr}.neutral-detail__row strong{text-align:left}}
 
 </style>
 <script>document.documentElement.classList.add('js');</script>
@@ -363,7 +363,7 @@ html[data-lang="en"] .ja-only{display:none!important}
 <div class="progress" id="progress"><i id="progressBar"></i></div>
 <header class="topbar" id="topbar">
   <span class="topbar__brand" aria-label="MATCHA TIMES"><img class="topbar__logo topbar__logo--green" src="assets/logo-horizontal-green.svg" alt="MATCHA TIMES"><img class="topbar__logo topbar__logo--white" src="assets/logo-horizontal-white.svg" alt="" aria-hidden="true"></span>
-<div class="topbar__actions"><a class="pdf-link ja-only" href="assets/MATCHA_TIMES_Franchise_Brand_Guide_JA.pdf" download="MATCHA_TIMES_Franchise_Brand_Guide_JA.pdf">PDF ↓</a><a class="pdf-link en-only" href="assets/MATCHA_TIMES_Franchise_Brand_Guide_EN.pdf" download="MATCHA_TIMES_Franchise_Brand_Guide_EN.pdf">PDF ↓</a>
+<div class="topbar__actions">
     <button class="ui-btn" id="langToggle" type="button" aria-label="Switch language">EN</button>
 </div>
 </header>
@@ -541,7 +541,7 @@ html[data-lang="en"] .ja-only{display:none!important}
         <div class="type-card__meta">
           <h3 class="type-card__name">Get Show</h3>
           <p class="type-card__use"><span class="ja-only">「Thank you so Matcha」マーク専用</span><span class="en-only">“Thank you so Matcha” mark</span></p>
-          <div class="type-card__actions"><span class="font-status font-status--embedded">Embedded SVG preview</span><a class="font-link" href="https://www.dafont.com/get-show.font" target="_blank" rel="noopener">Get font ↗</a></div>
+          <div class="type-card__actions"><span class="font-status font-status--embedded">SVG preview</span><a class="font-link" href="https://www.dafont.com/get-show.font" target="_blank" rel="noopener">Get font ↗</a></div>
         </div>
       </article>
     </div>
