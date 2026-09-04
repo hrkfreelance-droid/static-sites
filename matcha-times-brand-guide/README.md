@@ -9,4 +9,5 @@ UI: PDF buttons removed; Japan site link emphasized in the footer.
 Colour reference: PANTONE 3435 C with RGB 21 / 71 / 52 and CMYK 93 / 24 / 85 / 68 only.
 Language: Japanese and English are separated and polished for franchise stores and production partners; internal QA/status wording is not shown.
 Display: hero title restored to the original large scale; Japanese headings use one stronger weight.
-Controls: language switch uses JP / EN, with a persistent green / ivory colour-mode toggle.
+Controls: language label uses JP; colour mode toggles green/ivory while preserving brand reference artwork.
+Header: sticky header uses the exact page green/ivory surface colour with no translucent shade difference.
