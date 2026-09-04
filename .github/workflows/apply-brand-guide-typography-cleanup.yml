@@ -1,0 +1,80 @@
+name: Apply Brand Guide Typography Cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-brand-guide-typography-cleanup.yml'
+  workflow_dispatch:
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Update typography section
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('matcha-times-brand-guide/index.html')
+          s = p.read_text(encoding='utf-8')
+
+          s = s.replace('Four typefaces.<br>Fixed roles.', 'Three typefaces.<br>Fixed roles.')
+
+          s = re.sub(
+              r'\n\s*<article class="type-card reveal" data-d="2" data-font="panda">.*?</article>\n',
+              '\n',
+              s,
+              flags=re.S,
+          )
+
+          getshow = '''
+      <article class="type-card reveal" data-d="2">
+        <p class="type-card__index">03 / THANK YOU MARK</p>
+        <div class="type-card__sample type-card__sample--svg"><img src="assets/get-show-thank-you-mark.svg" alt="Thank you so Matcha! — Get Show"></div>
+        <div class="type-card__meta">
+          <h3 class="type-card__name">Get Show</h3>
+          <p class="type-card__use"><span class="ja-only">「Thank you so Matcha」マーク専用</span><span class="en-only">“Thank you so Matcha” mark</span></p>
+          <div class="type-card__actions"><span class="font-status font-status--embedded">Embedded SVG preview</span><a class="font-link" href="https://www.dafont.com/get-show.font" target="_blank" rel="noopener">Get font ↗</a></div>
+        </div>
+      </article>
+'''
+          s, n = re.subn(
+              r'\n\s*<article class="type-card reveal" data-d="3" data-font="getshow">.*?</article>\n',
+              '\n' + getshow,
+              s,
+              count=1,
+              flags=re.S,
+          )
+          if n != 1:
+              raise SystemExit('Get Show card pattern not found exactly once')
+
+          s = re.sub(r'^\.type-card\[data-font="panda"\].*\n', '', s, flags=re.M)
+          s = re.sub(r'^\.type-card\[data-font="getshow"\].*\n', '', s, flags=re.M)
+          s = re.sub(r'^\s*panda:\[[^\n]+\],?\n', '', s, flags=re.M)
+          s = re.sub(r'^\s*getshow:\[[^\n]+\],?\n', '', s, flags=re.M)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit and push
+        shell: bash
+        run: |
+          git config user.name "hrkfreelance-droid"
+          git config user.email "hrk.freelance@gmail.com"
+          git add matcha-times-brand-guide/index.html
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Remove Panda Bakery and use SVG for Get Show preview"
+          git push origin main
