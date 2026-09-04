@@ -348,6 +348,31 @@ html[data-lang="en"] .ja-only{display:none!important}
 .neutral-detail__row strong{font-size:var(--fs-sm);font-weight:600;text-align:right;line-height:1.5}
 @media(max-width:640px){.neutral-detail{row-gap:42px}.neutral-detail__main,.neutral-detail__spec{grid-column:1/-1}.neutral-detail__main{min-height:245px}.neutral-detail__row{grid-template-columns:1fr}.neutral-detail__row strong{text-align:left}}
 
+
+/* FC guide display correction: restore full-size hero title and strengthen Japanese headings */
+.hero__title > .ja-only,
+.hero__title > .en-only{
+  display:block;
+  font-family:inherit;
+  font-size:1em;
+  line-height:inherit;
+  letter-spacing:inherit;
+  text-transform:none;
+  font-weight:inherit;
+  margin-bottom:0;
+  color:inherit;
+}
+
+html[data-lang="ja"] .hero__title > .ja-only,
+html[data-lang="ja"] .h2,
+html[data-lang="ja"] .eyebrow,
+html[data-lang="ja"] .do-col__head,
+html[data-lang="ja"] .type-card__name,
+html[data-lang="ja"] .paint-step strong,
+html[data-lang="ja"] .logo-downloads__head strong{
+  font-weight:700;
+}
+
 </style>
 <script>document.documentElement.classList.add('js');</script>
 </head>
