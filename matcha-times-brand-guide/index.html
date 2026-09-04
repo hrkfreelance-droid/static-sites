@@ -373,6 +373,81 @@ html[data-lang="ja"] .logo-downloads__head strong{
   font-weight:700;
 }
 
+
+/* FC colour mode: green / ivory inversion */
+.ui-btn--theme{
+  width:30px;
+  padding-left:8px;
+  font-size:15px;
+  letter-spacing:0;
+  line-height:1;
+  opacity:.82;
+}
+.ui-btn--theme[aria-pressed="true"]{opacity:1}
+
+body,.hero,.sec,.sec--green,.foot,.topbar{transition:background-color .28s var(--ease),color .28s var(--ease),border-color .28s var(--ease)}
+
+html[data-theme="inverse"]{
+  --paper:var(--green);
+  --ink:var(--off);
+  --ink-soft:rgba(245,242,232,.84);
+  --muted:rgba(245,242,232,.64);
+  --line:rgba(245,242,232,.22);
+  --ui-soft:var(--green);
+  --warn:var(--off);
+  --warn-bg:rgba(245,242,232,.08);
+  --accent-ui:var(--off);
+  --topbar-bg:rgba(21,71,52,.92);
+}
+html[data-theme="inverse"] body{background:var(--green);color:var(--off)}
+
+html[data-theme="inverse"] .hero,
+html[data-theme="inverse"] .sec--green,
+html[data-theme="inverse"] .foot{
+  background:var(--off);
+  color:var(--green);
+}
+
+html[data-theme="inverse"] .hero__meta{color:rgba(21,71,52,.66)}
+html[data-theme="inverse"] .hero__foot{border-top-color:rgba(21,71,52,.24)}
+html[data-theme="inverse"] .hero__sub{color:rgba(21,71,52,.86)}
+html[data-theme="inverse"] .hero__scroll{color:rgba(21,71,52,.62)}
+html[data-theme="inverse"] .hero__scroll i{background:rgba(21,71,52,.25)}
+html[data-theme="inverse"] .hero__scroll i::after{background:var(--green)}
+
+html[data-theme="inverse"] .sec--green .eyebrow{color:rgba(21,71,52,.66)}
+html[data-theme="inverse"] .sec--green .eyebrow i{background:rgba(21,71,52,.26)}
+html[data-theme="inverse"] .sec--green .intro{color:rgba(21,71,52,.84)}
+html[data-theme="inverse"] .paint-steps{border-top-color:rgba(21,71,52,.30)}
+html[data-theme="inverse"] .paint-step{border-bottom-color:rgba(21,71,52,.18)}
+html[data-theme="inverse"] .paint-step::before{color:rgba(21,71,52,.48)}
+html[data-theme="inverse"] .paint-step p{color:rgba(21,71,52,.78)}
+
+html[data-theme="inverse"] .logo-preview__item{background:var(--off)}
+html[data-theme="inverse"] .logo-preview__item--green{background:var(--green)}
+html[data-theme="inverse"] .type-card__sample--svg img{filter:brightness(0) invert(1)}
+html[data-theme="inverse"] .swatch{background:var(--green);color:#fff}
+html[data-theme="inverse"] .swatch__label{color:rgba(255,255,255,.68)}
+
+html[data-theme="inverse"] .topbar__logo--green{display:none}
+html[data-theme="inverse"] .topbar__logo--white{display:block}
+html[data-theme="inverse"] .topbar.on-dark{color:rgba(21,71,52,.70);border-bottom-color:rgba(21,71,52,.16)}
+html[data-theme="inverse"] .topbar.on-dark .topbar__logo--green{display:block}
+html[data-theme="inverse"] .topbar.on-dark .topbar__logo--white{display:none}
+html[data-theme="inverse"] .topbar.on-dark.is-solid{background:rgba(245,242,232,.92)}
+
+html[data-theme="inverse"] .progress i{background:var(--off)}
+html[data-theme="inverse"] .progress.on-dark i{background:var(--green)}
+html[data-theme="inverse"] .indicator{color:rgba(245,242,232,.62)}
+html[data-theme="inverse"] .indicator strong{color:var(--off)}
+html[data-theme="inverse"] .indicator.on-dark{color:rgba(21,71,52,.60)}
+html[data-theme="inverse"] .indicator.on-dark strong{color:var(--green)}
+
+html[data-theme="inverse"] .foot{color:rgba(21,71,52,.64)}
+html[data-theme="inverse"] .foot__in{border-top-color:rgba(21,71,52,.22)}
+html[data-theme="inverse"] .foot__link{color:rgba(21,71,52,.94);border-color:rgba(21,71,52,.40)}
+html[data-theme="inverse"] .foot__link:hover{background:var(--green);color:var(--off);border-color:var(--green)}
+
 </style>
 <script>document.documentElement.classList.add('js');</script>
 </head>
@@ -381,7 +456,8 @@ html[data-lang="ja"] .logo-downloads__head strong{
 <header class="topbar" id="topbar">
   <span class="topbar__brand" aria-label="MATCHA TIMES"><img class="topbar__logo topbar__logo--green" src="assets/logo-horizontal-green.svg" alt="MATCHA TIMES"><img class="topbar__logo topbar__logo--white" src="assets/logo-horizontal-white.svg" alt="" aria-hidden="true"></span>
 <div class="topbar__actions">
-    <button class="ui-btn" id="langToggle" type="button" aria-label="日本語に切り替え">日本語</button>
+    <button class="ui-btn" id="langToggle" type="button" aria-label="日本語に切り替え">JP</button>
+    <button class="ui-btn ui-btn--theme" id="themeToggle" type="button" aria-label="Switch green and ivory colour mode" aria-pressed="false" title="Green / Ivory">◐</button>
 </div>
 </header>
 <div class="indicator" id="indicator" aria-hidden="true"><strong id="indNum">01</strong><span>/</span><span>04</span></div>
@@ -552,18 +628,36 @@ html[data-lang="ja"] .logo-downloads__head strong{
 
   var root=document.documentElement;
   var langToggle=document.getElementById('langToggle');
+  var themeToggle=document.getElementById('themeToggle');
 
   function applyLang(lang){
     lang=(lang==='en')?'en':'ja';
     root.setAttribute('data-lang',lang);
     root.setAttribute('lang',lang);
     try{localStorage.setItem('mt-brand-lang-v2',lang)}catch(e){}
-    if(langToggle){langToggle.textContent=lang==='ja'?'EN':'日本語';langToggle.setAttribute('aria-label',lang==='ja'?'Switch to English':'日本語に切り替え')}
+    if(langToggle){langToggle.textContent=lang==='ja'?'EN':'JP';langToggle.setAttribute('aria-label',lang==='ja'?'Switch to English':'日本語に切り替え')}
   }
   var savedLang='en';
   try{savedLang=localStorage.getItem('mt-brand-lang-v2')||'en'}catch(e){}
   applyLang(savedLang);
   if(langToggle)langToggle.addEventListener('click',function(){applyLang(root.getAttribute('data-lang')==='ja'?'en':'ja')});
+
+function applyTheme(theme){
+  theme=(theme==='inverse')?'inverse':'default';
+  if(theme==='inverse')root.setAttribute('data-theme','inverse');
+  else root.removeAttribute('data-theme');
+  try{localStorage.setItem('mt-brand-theme-v1',theme)}catch(e){}
+  if(themeToggle){
+    var inverse=theme==='inverse';
+    themeToggle.setAttribute('aria-pressed',inverse?'true':'false');
+    themeToggle.setAttribute('aria-label',inverse?'Use green-first colour mode':'Use ivory-first colour mode');
+  }
+}
+var savedTheme='default';
+try{savedTheme=localStorage.getItem('mt-brand-theme-v1')||'default'}catch(e){}
+applyTheme(savedTheme);
+if(themeToggle)themeToggle.addEventListener('click',function(){applyTheme(root.getAttribute('data-theme')==='inverse'?'default':'inverse')});
+
 
   var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var revealables=document.querySelectorAll('.reveal');
