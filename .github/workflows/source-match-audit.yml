@@ -10,45 +10,51 @@ jobs:
   compare:
     runs-on: ubuntu-latest
     steps:
-      - name: Compare known GitHub HTML with live Pages HTML
+      - name: Compare legacy Netlify and Cloudflare Pages HTML
         run: |
           set -euo pipefail
           compare() {
             label="$1"
-            raw="$2"
-            live="$3"
+            source="$2"
+            target="$3"
             a=$(mktemp)
             b=$(mktemp)
-            curl -fsSL --compressed "$raw" -o "$a"
-            curl -fsSL --compressed "${live}?source_match=$(date +%s%N)" -o "$b"
-            raw_sha=$(sha256sum "$a" | awk '{print $1}')
-            live_sha=$(sha256sum "$b" | awk '{print $1}')
-            raw_size=$(wc -c < "$a" | tr -d ' ')
-            live_size=$(wc -c < "$b" | tr -d ' ')
+            if ! curl -fsSL --compressed "${source}?source_match=$(date +%s%N)" -o "$a"; then
+              echo "$label source_unavailable=true"
+              return
+            fi
+            if ! curl -fsSL --compressed "${target}?source_match=$(date +%s%N)" -o "$b"; then
+              echo "$label target_unavailable=true"
+              return
+            fi
+            source_sha=$(sha256sum "$a" | awk '{print $1}')
+            target_sha=$(sha256sum "$b" | awk '{print $1}')
+            source_size=$(wc -c < "$a" | tr -d ' ')
+            target_size=$(wc -c < "$b" | tr -d ' ')
             if cmp -s "$a" "$b"; then exact=true; else exact=false; fi
-            echo "$label exact=$exact raw_size=$raw_size live_size=$live_size raw_sha=$raw_sha live_sha=$live_sha"
+            echo "$label exact=$exact source_size=$source_size target_size=$target_size source_sha=$source_sha target_sha=$target_sha"
           }
 
-          compare 'indonesia/root' \
-            'https://raw.githubusercontent.com/hrkfreelance-droid/matcha-times-indonesia/main/index.html' \
-            'https://matcha-times-indonesia.pages.dev/'
+          compare 'machida-netlify->cloudflare' \
+            'https://machida-shoten-cambodia.netlify.app/' \
+            'https://machida-shoten-cambodia.pages.dev/'
 
-          compare 'pakistan/root' \
-            'https://raw.githubusercontent.com/hrkfreelance-droid/matcha-times-pakistan/main/index.html' \
-            'https://matcha-times-pakistan.pages.dev/'
+          compare 'thailand-netlify->cloudflare' \
+            'https://matcha-times-thailand.netlify.app/' \
+            'https://matcha-times-thailand.pages.dev/'
 
-          compare 'asakusa-preview->asakusa' \
-            'https://raw.githubusercontent.com/hrkfreelance-droid/matcha-times-japan-asakusa-preview/main/index.html' \
+          compare 'asakusa-netlify->cloudflare' \
+            'https://matcha-times-japan-asakusa.netlify.app/' \
             'https://matcha-times-asakusa.pages.dev/'
 
-          compare 'asakusa-preview->japan' \
-            'https://raw.githubusercontent.com/hrkfreelance-droid/matcha-times-japan-asakusa-preview/main/index.html' \
-            'https://matcha-times-japan.pages.dev/'
-
-          compare 'website/en->cambodia' \
-            'https://raw.githubusercontent.com/hrkfreelance-droid/matcha-times-website/main/en/index.html' \
+          compare 'v3-netlify->cambodia' \
+            'https://matcha-times-v3.netlify.app/' \
             'https://matcha-times-cambodia.pages.dev/'
 
-          compare 'website/en->thailand' \
-            'https://raw.githubusercontent.com/hrkfreelance-droid/matcha-times-website/main/en/index.html' \
+          compare 'v3-netlify->japan' \
+            'https://matcha-times-v3.netlify.app/' \
+            'https://matcha-times-japan.pages.dev/'
+
+          compare 'v3-netlify->thailand' \
+            'https://matcha-times-v3.netlify.app/' \
             'https://matcha-times-thailand.pages.dev/'
