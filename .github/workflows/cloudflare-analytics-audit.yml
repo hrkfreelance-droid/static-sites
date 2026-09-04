@@ -51,16 +51,14 @@ jobs:
           request "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects" /tmp/pages.json
 
           echo '=== CLOUDFLARE PAGES: MATCHA / MACHIDA ==='
-          python3 - /tmp/pages.json <<'PY'
+          python3 - /tmp/pages.json > /tmp/projects.tsv <<'PY'
           import json, re, sys
 
           data = json.load(open(sys.argv[1]))
           if not data.get('success'):
-              print('Pages API success=false')
-              sys.exit(1)
+              raise SystemExit('Pages API success=false')
 
-          matched = []
-          for p in data.get('result', []):
+          for p in sorted(data.get('result', []), key=lambda x: x.get('name') or ''):
               name = p.get('name') or ''
               domains = p.get('domains') or []
               subdomain = p.get('subdomain') or ''
@@ -72,23 +70,45 @@ jobs:
               canonical_cfg = (p.get('canonical_deployment') or {}).get('build_config') or {}
               latest = p.get('latest_deployment') or {}
               latest_cfg = latest.get('build_config') or {}
-
               has_tag = bool(project_cfg.get('web_analytics_tag') or canonical_cfg.get('web_analytics_tag') or latest_cfg.get('web_analytics_tag'))
               has_token = bool(project_cfg.get('web_analytics_token') or canonical_cfg.get('web_analytics_token') or latest_cfg.get('web_analytics_token'))
-              matched.append((name, subdomain, domains, p.get('production_branch'), latest.get('url'), has_tag, has_token))
-
-          if not matched:
-              print('No Pages projects matched matcha/machida.')
-          else:
-              for name, subdomain, domains, branch, latest_url, has_tag, has_token in sorted(matched):
-                  print(f"project={name}")
-                  print(f"  subdomain={subdomain or '-'}")
-                  print(f"  domains={','.join(domains) if domains else '-'}")
-                  print(f"  production_branch={branch or '-'}")
-                  print(f"  latest_url={latest_url or '-'}")
-                  print(f"  analytics_tag_present={str(has_tag).lower()}")
-                  print(f"  analytics_token_present={str(has_token).lower()}")
+              print('\t'.join([
+                  name,
+                  subdomain,
+                  p.get('production_branch') or '',
+                  latest.get('url') or '',
+                  str(has_tag).lower(),
+                  str(has_token).lower(),
+              ]))
           PY
+
+          while IFS=$'\t' read -r project subdomain branch latest_url has_tag has_token; do
+            [ -n "$project" ] || continue
+            echo "project=${project}"
+            echo "  subdomain=${subdomain:-'-'}"
+            echo "  production_branch=${branch:-'-'}"
+            echo "  latest_url=${latest_url:-'-'}"
+            echo "  analytics_tag_present=${has_tag}"
+            echo "  analytics_token_present=${has_token}"
+
+            http_status="000"
+            beacon="false"
+            html_hint="false"
+            if [ -n "$subdomain" ]; then
+              html="/tmp/live-${project}.html"
+              http_status=$(curl -sS -L --compressed -o "$html" -w '%{http_code}' \
+                "https://${subdomain}/?cf_analytics_audit=$(date +%s)")
+              if grep -Eqi '<!doctype html|<html[ >]' "$html"; then
+                html_hint="true"
+              fi
+              if grep -Eqi 'static\.cloudflareinsights\.com/beacon\.min\.js|data-cf-beacon' "$html"; then
+                beacon="true"
+              fi
+            fi
+            echo "  live_http=${http_status}"
+            echo "  html_present=${html_hint}"
+            echo "  live_beacon_present=${beacon}"
+          done < /tmp/projects.tsv
 
           echo '=== CLOUDFLARE WEB ANALYTICS SITES: MATCHA / MACHIDA ==='
           if request "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/rum/site_info/list" /tmp/rum.json; then
