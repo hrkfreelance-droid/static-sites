@@ -1,0 +1,77 @@
+name: Apply Hero Title and Japanese Heading Fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-hero-title-weight-fix.yml'
+  workflow_dispatch:
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Fix hero title size and Japanese heading weight
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('matcha-times-brand-guide/index.html')
+          s = p.read_text(encoding='utf-8')
+
+          marker = '\n</style>'
+          css = r'''
+
+/* FC guide display correction: restore full-size hero title and strengthen Japanese headings */
+.hero__title > .ja-only,
+.hero__title > .en-only{
+  display:block;
+  font-family:inherit;
+  font-size:1em;
+  line-height:inherit;
+  letter-spacing:inherit;
+  text-transform:none;
+  font-weight:inherit;
+  margin-bottom:0;
+  color:inherit;
+}
+
+html[data-lang="ja"] .hero__title > .ja-only,
+html[data-lang="ja"] .h2,
+html[data-lang="ja"] .eyebrow,
+html[data-lang="ja"] .do-col__head,
+html[data-lang="ja"] .type-card__name,
+html[data-lang="ja"] .paint-step strong,
+html[data-lang="ja"] .logo-downloads__head strong{
+  font-weight:700;
+}
+'''
+
+          if 'FC guide display correction: restore full-size hero title' not in s:
+              if marker not in s:
+                  raise SystemExit('style end marker not found')
+              s = s.replace(marker, css + marker, 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit and push
+        shell: bash
+        run: |
+          git config user.name "hrkfreelance-droid"
+          git config user.email "hrk.freelance@gmail.com"
+          git add matcha-times-brand-guide/index.html
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Restore hero title size and strengthen Japanese headings"
+          git push origin main
