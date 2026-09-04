@@ -23,43 +23,14 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-
           p = Path('matcha-times-brand-guide/index.html')
           s = p.read_text(encoding='utf-8')
-
           marker = '\n</style>'
-          css = r'''
-
-/* FC guide display correction: restore full-size hero title and strengthen Japanese headings */
-.hero__title > .ja-only,
-.hero__title > .en-only{
-  display:block;
-  font-family:inherit;
-  font-size:1em;
-  line-height:inherit;
-  letter-spacing:inherit;
-  text-transform:none;
-  font-weight:inherit;
-  margin-bottom:0;
-  color:inherit;
-}
-
-html[data-lang="ja"] .hero__title > .ja-only,
-html[data-lang="ja"] .h2,
-html[data-lang="ja"] .eyebrow,
-html[data-lang="ja"] .do-col__head,
-html[data-lang="ja"] .type-card__name,
-html[data-lang="ja"] .paint-step strong,
-html[data-lang="ja"] .logo-downloads__head strong{
-  font-weight:700;
-}
-'''
-
+          css = '\n\n/* FC guide display correction: restore full-size hero title and strengthen Japanese headings */\n.hero__title > .ja-only,\n.hero__title > .en-only{\n  display:block;\n  font-family:inherit;\n  font-size:1em;\n  line-height:inherit;\n  letter-spacing:inherit;\n  text-transform:none;\n  font-weight:inherit;\n  margin-bottom:0;\n  color:inherit;\n}\n\nhtml[data-lang="ja"] .hero__title > .ja-only,\nhtml[data-lang="ja"] .h2,\nhtml[data-lang="ja"] .eyebrow,\nhtml[data-lang="ja"] .do-col__head,\nhtml[data-lang="ja"] .type-card__name,\nhtml[data-lang="ja"] .paint-step strong,\nhtml[data-lang="ja"] .logo-downloads__head strong{\n  font-weight:700;\n}\n'
           if 'FC guide display correction: restore full-size hero title' not in s:
               if marker not in s:
                   raise SystemExit('style end marker not found')
               s = s.replace(marker, css + marker, 1)
-
           p.write_text(s, encoding='utf-8')
           PY
 
