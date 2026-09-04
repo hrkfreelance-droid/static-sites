@@ -27,7 +27,6 @@ jobs:
 
           p = Path('matcha-times-brand-guide/index.html')
           s = p.read_text(encoding='utf-8')
-
           s = s.replace('Four typefaces.<br>Fixed roles.', 'Three typefaces.<br>Fixed roles.')
 
           s = re.sub(
@@ -37,20 +36,20 @@ jobs:
               flags=re.S,
           )
 
-          getshow = '''
-      <article class="type-card reveal" data-d="2">
-        <p class="type-card__index">03 / THANK YOU MARK</p>
-        <div class="type-card__sample type-card__sample--svg"><img src="assets/get-show-thank-you-mark.svg" alt="Thank you so Matcha! — Get Show"></div>
-        <div class="type-card__meta">
-          <h3 class="type-card__name">Get Show</h3>
-          <p class="type-card__use"><span class="ja-only">「Thank you so Matcha」マーク専用</span><span class="en-only">“Thank you so Matcha” mark</span></p>
-          <div class="type-card__actions"><span class="font-status font-status--embedded">Embedded SVG preview</span><a class="font-link" href="https://www.dafont.com/get-show.font" target="_blank" rel="noopener">Get font ↗</a></div>
-        </div>
-      </article>
-'''
+          getshow = (
+              '\n      <article class="type-card reveal" data-d="2">\n'
+              '        <p class="type-card__index">03 / THANK YOU MARK</p>\n'
+              '        <div class="type-card__sample type-card__sample--svg"><img src="assets/get-show-thank-you-mark.svg" alt="Thank you so Matcha! — Get Show"></div>\n'
+              '        <div class="type-card__meta">\n'
+              '          <h3 class="type-card__name">Get Show</h3>\n'
+              '          <p class="type-card__use"><span class="ja-only">「Thank you so Matcha」マーク専用</span><span class="en-only">“Thank you so Matcha” mark</span></p>\n'
+              '          <div class="type-card__actions"><span class="font-status font-status--embedded">Embedded SVG preview</span><a class="font-link" href="https://www.dafont.com/get-show.font" target="_blank" rel="noopener">Get font ↗</a></div>\n'
+              '        </div>\n'
+              '      </article>\n'
+          )
           s, n = re.subn(
               r'\n\s*<article class="type-card reveal" data-d="3" data-font="getshow">.*?</article>\n',
-              '\n' + getshow,
+              getshow,
               s,
               count=1,
               flags=re.S,
@@ -62,7 +61,6 @@ jobs:
           s = re.sub(r'^\.type-card\[data-font="getshow"\].*\n', '', s, flags=re.M)
           s = re.sub(r'^\s*panda:\[[^\n]+\],?\n', '', s, flags=re.M)
           s = re.sub(r'^\s*getshow:\[[^\n]+\],?\n', '', s, flags=re.M)
-
           p.write_text(s, encoding='utf-8')
           PY
 
