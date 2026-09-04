@@ -28,7 +28,6 @@ jobs:
           p = Path('matcha-times-brand-guide/index.html')
           s = p.read_text(encoding='utf-8')
 
-          # Remove visible PDF download buttons.
           s, n = re.subn(
               r'<div class="topbar__actions"><a class="pdf-link ja-only".*?</a><a class="pdf-link en-only".*?</a>\s*<button',
               '<div class="topbar__actions">\n    <button',
@@ -49,16 +48,20 @@ jobs:
               raise SystemExit('PDF button CSS not found exactly once')
           s = s.replace('.pdf-link{padding-left:8px}', '')
 
-          old_footer = '''.foot__utility{display:flex;justify-content:flex-start;align-items:center;margin-top:16px}
-.foot__link{display:inline-flex;align-items:center;gap:.45em;font-size:9.5px;line-height:1.4;letter-spacing:.03em;text-transform:none;color:rgba(255,255,255,.44);text-decoration:none;transition:color .2s ease}
-.foot__link::after{content:"↗";font-size:.92em;opacity:.72;transform:translateY(-.04em)}
-.foot__link:hover{color:rgba(255,255,255,.9)}'''
-          new_footer = '''.foot__utility{display:flex;justify-content:flex-start;align-items:center;margin-top:20px}
-.foot__link{display:inline-flex;align-items:center;gap:.65em;padding:11px 15px;border:1px solid rgba(255,255,255,.42);border-radius:999px;font-size:10.5px;font-weight:600;line-height:1;letter-spacing:.04em;text-transform:none;color:rgba(255,255,255,.94);text-decoration:none;transition:background-color .2s ease,color .2s ease,border-color .2s ease,transform .2s ease}
-.foot__link::after{content:"↗";font-size:.92em;opacity:.8;transform:translateY(-.04em)}
-.foot__link:hover{background:#fff;color:var(--green);border-color:#fff;transform:translateY(-1px)}
-.foot__link:focus-visible{outline:2px solid #fff;outline-offset:3px}
-@media(max-width:640px){.foot__link{width:100%;justify-content:space-between;padding:13px 15px}}'''
+          old_footer = (
+              '.foot__utility{display:flex;justify-content:flex-start;align-items:center;margin-top:16px}\n'
+              '.foot__link{display:inline-flex;align-items:center;gap:.45em;font-size:9.5px;line-height:1.4;letter-spacing:.03em;text-transform:none;color:rgba(255,255,255,.44);text-decoration:none;transition:color .2s ease}\n'
+              '.foot__link::after{content:"↗";font-size:.92em;opacity:.72;transform:translateY(-.04em)}\n'
+              '.foot__link:hover{color:rgba(255,255,255,.9)}'
+          )
+          new_footer = (
+              '.foot__utility{display:flex;justify-content:flex-start;align-items:center;margin-top:20px}\n'
+              '.foot__link{display:inline-flex;align-items:center;gap:.65em;padding:11px 15px;border:1px solid rgba(255,255,255,.42);border-radius:999px;font-size:10.5px;font-weight:600;line-height:1;letter-spacing:.04em;text-transform:none;color:rgba(255,255,255,.94);text-decoration:none;transition:background-color .2s ease,color .2s ease,border-color .2s ease,transform .2s ease}\n'
+              '.foot__link::after{content:"↗";font-size:.92em;opacity:.8;transform:translateY(-.04em)}\n'
+              '.foot__link:hover{background:#fff;color:var(--green);border-color:#fff;transform:translateY(-1px)}\n'
+              '.foot__link:focus-visible{outline:2px solid #fff;outline-offset:3px}\n'
+              '@media(max-width:640px){.foot__link{width:100%;justify-content:space-between;padding:13px 15px}}'
+          )
           if old_footer not in s:
               raise SystemExit('Footer link CSS block not found')
           s = s.replace(old_footer, new_footer, 1)
