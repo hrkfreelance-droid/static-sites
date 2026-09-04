@@ -1,16 +1,13 @@
-name: Finish all MATCHA Cloudflare Web Analytics
+name: Finish remaining MATCHA Cloudflare Web Analytics
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/finish-all-matcha-analytics.yml'
+  workflow_dispatch:
 
 jobs:
   finish:
     runs-on: ubuntu-latest
     steps:
-      - name: Enable/redeploy all remaining MATCHA Pages projects
+      - name: Enable and redeploy remaining MATCHA Pages projects
         env:
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -20,15 +17,14 @@ jobs:
           auth=(-H "Authorization: Bearer ${CF_API_TOKEN}")
           json_auth=(-H "Authorization: Bearer ${CF_API_TOKEN}" -H 'Content-Type: application/json')
 
-          get_project() {
+          finish_project() {
             local project="$1"
-            curl -fsS "${auth[@]}" "${api}/pages/projects/${project}" -o "/tmp/project-${project}.json"
-          }
+            local host="${project}.pages.dev"
+            echo "=== ${project} ==="
 
-          analytics_ready() {
-            local project="$1"
-            python3 - "/tmp/project-${project}.json" <<'PY'
-          import json, sys
+            curl -fsS "${auth[@]}" "${api}/pages/projects/${project}" -o "/tmp/project.json"
+            if python3 - /tmp/project.json <<'PY'
+          import json,sys
           p=(json.load(open(sys.argv[1])).get('result') or {})
           cfg=p.get('build_config') or {}
           can=(p.get('canonical_deployment') or {}).get('build_config') or {}
@@ -37,157 +33,97 @@ jobs:
           tok=cfg.get('web_analytics_token') or can.get('web_analytics_token') or lat.get('web_analytics_token')
           raise SystemExit(0 if tag and tok else 1)
           PY
-          }
-
-          create_analytics_config() {
-            local project="$1"
-            local host="${project}.pages.dev"
-            echo "project=${project} analytics_config=missing attempting_create"
-            body=$(python3 - "$host" <<'PY'
+            then
+              echo 'analytics_config=already_present'
+            else
+              body=$(python3 - "$host" <<'PY'
           import json,sys
           print(json.dumps({'host':sys.argv[1],'auto_install':False},separators=(',',':')))
           PY
-          )
-            http=$(curl -sS -o "/tmp/rum-${project}.json" -w '%{http_code}' -X POST "${json_auth[@]}" \
-              "${api}/rum/site_info" --data "$body")
-            if [ "$http" -lt 200 ] || [ "$http" -ge 300 ]; then
-              echo "project=${project} rum_create_http=${http}"
-              python3 - "/tmp/rum-${project}.json" <<'PY'
+              )
+              http=$(curl -sS -o /tmp/rum.json -w '%{http_code}' -X POST "${json_auth[@]}" "${api}/rum/site_info" --data "$body")
+              if [ "$http" -lt 200 ] || [ "$http" -ge 300 ]; then
+                echo "RUM_CREATE_FAIL HTTP=${http}"
+                python3 - /tmp/rum.json <<'PY'
           import json,sys
           try:
               d=json.load(open(sys.argv[1]))
-              for e in d.get('errors',[]): print(f"  error_code={e.get('code')} error_message={e.get('message')}")
+              for e in d.get('errors',[]): print(f"error_code={e.get('code')} error_message={e.get('message')}")
           except Exception: pass
           PY
-              return 1
-            fi
+                return 1
+              fi
 
-            python3 - "/tmp/rum-${project}.json" "/tmp/patch-${project}.json" <<'PY'
+              python3 - /tmp/rum.json /tmp/patch.json <<'PY'
           import json,sys
           d=json.load(open(sys.argv[1])).get('result') or {}
-          tag=d.get('site_tag')
-          tok=d.get('site_token')
-          if not tag or not tok: raise SystemExit('RUM create succeeded but site_tag/site_token missing')
+          tag=d.get('site_tag'); tok=d.get('site_token')
+          if not tag or not tok: raise SystemExit('site_tag/site_token missing')
           json.dump({'build_config':{'web_analytics_tag':tag,'web_analytics_token':tok}},open(sys.argv[2],'w'),separators=(',',':'))
-          print('rum_site_created=true')
           PY
-
-            http=$(curl -sS -o "/tmp/patch-result-${project}.json" -w '%{http_code}' -X PATCH "${json_auth[@]}" \
-              "${api}/pages/projects/${project}" --data-binary "@/tmp/patch-${project}.json")
-            if [ "$http" -lt 200 ] || [ "$http" -ge 300 ]; then
-              echo "project=${project} pages_patch_http=${http}"
-              python3 - "/tmp/patch-result-${project}.json" <<'PY'
-          import json,sys
-          try:
-              d=json.load(open(sys.argv[1]))
-              for e in d.get('errors',[]): print(f"  error_code={e.get('code')} error_message={e.get('message')}")
-          except Exception: pass
-          PY
-              return 1
+              curl -fsS -X PATCH "${json_auth[@]}" "${api}/pages/projects/${project}" --data-binary @/tmp/patch.json -o /tmp/patched.json
+              echo 'analytics_config=created'
             fi
-            echo "project=${project} analytics_config=created"
-          }
 
-          redeploy_same_manifest() {
-            local project="$1"
-            curl -fsS "${auth[@]}" "${api}/pages/projects/${project}/deployments" -o "/tmp/deployments-${project}.json"
-            dep_id=$(python3 - "/tmp/deployments-${project}.json" <<'PY'
+            curl -fsS "${auth[@]}" "${api}/pages/projects/${project}/deployments" -o /tmp/deployments.json
+            dep_id=$(python3 - /tmp/deployments.json <<'PY'
           import json,sys
-          rows=json.load(open(sys.argv[1])).get('result') or []
-          for d in rows:
-              if d.get('environment')=='production':
-                  print(d.get('id') or '')
-                  break
-          else: raise SystemExit('No production deployment found')
+          for d in json.load(open(sys.argv[1])).get('result') or []:
+              if d.get('environment')=='production': print(d.get('id') or ''); break
+          else: raise SystemExit('No production deployment')
           PY
-          )
-            curl -fsS "${auth[@]}" "${api}/pages/projects/${project}/deployments/${dep_id}" -o "/tmp/dep-${project}.json"
-            python3 - "/tmp/dep-${project}.json" "/tmp/manifest-${project}.json" <<'PY'
+            )
+            curl -fsS "${auth[@]}" "${api}/pages/projects/${project}/deployments/${dep_id}" -o /tmp/dep.json
+            python3 - /tmp/dep.json /tmp/manifest.json <<'PY'
           import json,sys
-          d=(json.load(open(sys.argv[1])).get('result') or {})
+          d=json.load(open(sys.argv[1])).get('result') or {}
           files=d.get('files') or {}
-          if not isinstance(files,dict) or not files: raise SystemExit('Current file manifest is empty')
+          if not files: raise SystemExit('Empty manifest')
           json.dump(files,open(sys.argv[2],'w'),separators=(',',':'),sort_keys=True)
-          print(f"source_deployment={d.get('id')} manifest_files={len(files)}")
           PY
 
-            http=$(curl -sS -o "/tmp/create-${project}.json" -w '%{http_code}' -X POST "${auth[@]}" \
-              "${api}/pages/projects/${project}/deployments" \
+            curl -fsS -X POST "${auth[@]}" "${api}/pages/projects/${project}/deployments" \
               --form-string 'branch=main' \
               --form-string 'commit_dirty=false' \
               --form-string 'commit_message=Activate Cloudflare Web Analytics without changing site assets' \
-              --form-string "manifest=$(cat /tmp/manifest-${project}.json)")
-            if [ "$http" -lt 200 ] || [ "$http" -ge 300 ]; then
-              echo "project=${project} deploy_create_http=${http}"
-              return 1
-            fi
-            new_id=$(python3 - "/tmp/create-${project}.json" <<'PY'
+              --form-string "manifest=$(cat /tmp/manifest.json)" -o /tmp/create.json
+            new_id=$(python3 - /tmp/create.json <<'PY'
           import json,sys
           print((json.load(open(sys.argv[1])).get('result') or {}).get('id') or '')
           PY
-          )
+            )
             [ -n "$new_id" ] || return 1
 
             final=''
             for i in $(seq 1 60); do
               sleep 2
-              curl -fsS "${auth[@]}" "${api}/pages/projects/${project}/deployments/${new_id}" -o "/tmp/status-${project}.json" || continue
-              final=$(python3 - "/tmp/status-${project}.json" <<'PY'
+              curl -fsS "${auth[@]}" "${api}/pages/projects/${project}/deployments/${new_id}" -o /tmp/status.json || continue
+              final=$(python3 - /tmp/status.json <<'PY'
           import json,sys
           r=json.load(open(sys.argv[1])).get('result') or {}
           print(((r.get('latest_stage') or {}).get('status')) or '')
           PY
-          )
+              )
               case "$final" in success|failure|canceled) break;; esac
             done
-            [ "$final" = success ] || { echo "project=${project} deployment_status=${final:-timeout}"; return 1; }
+            [ "$final" = success ] || return 1
 
             html=$(mktemp)
             for i in $(seq 1 20); do
               curl -fsSL --compressed "https://${project}.pages.dev/?analytics_verify=$(date +%s%N)" -o "$html"
               if grep -Eqi 'static\.cloudflareinsights\.com/beacon\.min\.js|data-cf-beacon' "$html"; then
-                echo "project=${project} LIVE_PASS beacon_present=true"
+                echo 'LIVE_PASS beacon_present=true'
                 return 0
               fi
               sleep 3
             done
-            echo "project=${project} LIVE_FAIL beacon_present=false"
+            echo 'LIVE_FAIL beacon_present=false'
             return 1
           }
 
           failures=0
-          for project in \
-            matcha-times-cambodia \
-            matcha-times-japan \
-            matcha-times-thailand \
-            matcha-times-asakusa \
-            matcha-times-brand-guide
-          do
-            echo "=== ${project} ==="
-            if ! get_project "$project"; then
-              echo "project=${project} PROJECT_LOOKUP_FAIL"
-              failures=$((failures+1))
-              continue
-            fi
-            if analytics_ready "$project"; then
-              echo "project=${project} analytics_config=present"
-            else
-              if ! create_analytics_config "$project"; then
-                echo "project=${project} ANALYTICS_ENABLE_FAIL"
-                failures=$((failures+1))
-                continue
-              fi
-              get_project "$project"
-              if ! analytics_ready "$project"; then
-                echo "project=${project} ANALYTICS_CONFIG_VERIFY_FAIL"
-                failures=$((failures+1))
-                continue
-              fi
-            fi
-            if ! redeploy_same_manifest "$project"; then
-              failures=$((failures+1))
-            fi
+          for project in matcha-times-asakusa matcha-times-brand-guide; do
+            finish_project "$project" || failures=$((failures+1))
           done
-
           echo "failures=${failures}"
           [ "$failures" -eq 0 ]
