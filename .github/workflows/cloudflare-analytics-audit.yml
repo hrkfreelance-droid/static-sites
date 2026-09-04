@@ -70,8 +70,10 @@ jobs:
               canonical_cfg = (p.get('canonical_deployment') or {}).get('build_config') or {}
               latest = p.get('latest_deployment') or {}
               latest_cfg = latest.get('build_config') or {}
+              metadata = (latest.get('deployment_trigger') or {}).get('metadata') or {}
               has_tag = bool(project_cfg.get('web_analytics_tag') or canonical_cfg.get('web_analytics_tag') or latest_cfg.get('web_analytics_tag'))
               has_token = bool(project_cfg.get('web_analytics_token') or canonical_cfg.get('web_analytics_token') or latest_cfg.get('web_analytics_token'))
+              clean_message = (metadata.get('commit_message') or '').replace('\t', ' ').replace('\n', ' ')[:120]
               print('\t'.join([
                   name,
                   subdomain,
@@ -79,10 +81,12 @@ jobs:
                   latest.get('url') or '',
                   str(has_tag).lower(),
                   str(has_token).lower(),
+                  metadata.get('commit_hash') or '',
+                  clean_message,
               ]))
           PY
 
-          while IFS=$'\t' read -r project subdomain branch latest_url has_tag has_token; do
+          while IFS=$'\t' read -r project subdomain branch latest_url has_tag has_token commit_hash commit_message; do
             [ -n "$project" ] || continue
             echo "project=${project}"
             echo "  subdomain=${subdomain:-'-'}"
@@ -90,6 +94,8 @@ jobs:
             echo "  latest_url=${latest_url:-'-'}"
             echo "  analytics_tag_present=${has_tag}"
             echo "  analytics_token_present=${has_token}"
+            echo "  source_commit=${commit_hash:-'-'}"
+            echo "  source_message=${commit_message:-'-'}"
 
             http_status="000"
             beacon="false"
@@ -114,12 +120,10 @@ jobs:
           if request "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/rum/site_info/list" /tmp/rum.json; then
             python3 - /tmp/rum.json <<'PY'
           import json, re, sys
-
           data = json.load(open(sys.argv[1]))
           if not data.get('success'):
               print('RUM API success=false')
               sys.exit(1)
-
           matched = []
           for s in data.get('result', []):
               rules = s.get('rules') or []
@@ -129,11 +133,9 @@ jobs:
               if zone_name:
                   hosts.append(zone_name)
               hosts = sorted(set(hosts))
-              haystack = ' '.join(hosts)
-              if not re.search(r'(matcha|machida)', haystack, re.I):
+              if not re.search(r'(matcha|machida)', ' '.join(hosts), re.I):
                   continue
               matched.append((hosts, bool(s.get('auto_install')), bool(ruleset.get('enabled')), bool(s.get('site_token'))))
-
           if not matched:
               print('No Web Analytics sites matched matcha/machida by host/ruleset.')
           else:
