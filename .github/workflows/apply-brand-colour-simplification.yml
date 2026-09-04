@@ -1,0 +1,73 @@
+name: Apply Brand Colour Simplification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-brand-colour-simplification.yml'
+  workflow_dispatch:
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Simplify Brand Colour section
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('matcha-times-brand-guide/index.html')
+          s = p.read_text(encoding='utf-8')
+
+          replacement = '''<section class="sec" id="s02" data-num="02">
+  <div class="wrap">
+    <p class="eyebrow reveal">02<i></i>Brand Colour</p>
+    <h2 class="h2 reveal" data-d="1">PANTONE 3435 C.</h2>
+    <p class="intro reveal" data-d="2"><span class="ja-only">ブランドカラーは PANTONE 3435 C。RGB / CMYK は下記を使用。</span><span class="en-only">Brand colour: PANTONE 3435 C. Use the RGB / CMYK values below.</span></p>
+
+    <div class="color-master">
+      <div class="swatch reveal" data-d="2">
+        <p class="swatch__label">Brand Colour</p>
+        <p class="swatch__code">PANTONE<br>3435 C</p>
+      </div>
+      <aside class="formula reveal" data-d="3">
+        <ul class="formula__list">
+          <li><span>RGB</span><strong>21 / 71 / 52</strong></li>
+          <li><span>CMYK</span><strong>93 / 24 / 85 / 68</strong></li>
+        </ul>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="s03" data-num="03">'''
+
+          pattern = r'<section class="sec" id="s02" data-num="02">.*?</section>\s*<section class="sec" id="s03" data-num="03">'
+          s, n = re.subn(pattern, replacement, s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit(f'Brand Colour section replacement count: {n}')
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit and push
+        shell: bash
+        run: |
+          git config user.name "hrkfreelance-droid"
+          git config user.email "hrk.freelance@gmail.com"
+          git add matcha-times-brand-guide/index.html
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Simplify brand colour reference"
+          git push origin main
