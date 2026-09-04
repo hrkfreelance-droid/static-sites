@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MATCHA TIMES — Franchise Brand Guide</title>
+<meta name="description" content="MATCHA TIMES Franchise Brand Guide — colour, typography, logo, signage and interior standards for franchise stores and production partners.">
+<meta name="theme-color" content="#154734">
+<meta property="og:title" content="MATCHA TIMES — Franchise Brand Guide">
+<meta property="og:description" content="MATCHA TIMES franchise brand guide — PANTONE 3435 C, typography, logo and interior standards.">
+<meta property="og:type" content="website">
+<style>
+/* =========================================================
+   MATCHA TIMES — Franchise Brand Guide / final
+   Source: Brand Standards v1.0 draft / 2026-09-03
+
+   COLOUR REFERENCE
+   PANTONE 3435 C is the master brand colour.
+   This guide uses #154734 / RGB 21 71 52 as the digital reference.
+   ========================================================= */
+
+:root{
+  --green:#154734;           /* PANTONE 3435 C digital reference */
+  --green-current:#154734;   /* logo display aligned to 3435 C */
+  --white:#FFFFFF;          /* brand white */
+  --off:#F5F2E8;             /* MATCHA TIMES warm off-white */
+  --paper:var(--off);
+  --ink:#154734;
+  --ink-soft:rgba(21,71,52,.82);
+  --muted:rgba(21,71,52,.62);
+  --line:rgba(21,71,52,.20);
+  --line-dark:rgba(255,255,255,.28);
+  --ui-soft:var(--off);
+  --warn:#154734;
+  --warn-bg:rgba(21,71,52,.06);
+  --accent-ui:#154734;
+  --topbar-bg:rgba(245,242,232,.92);
+
+  --max:1240px;
+  --gut:clamp(20px,4vw,56px);
+  --gap:clamp(14px,1.7vw,24px);
+  --sec-y:clamp(88px,11vw,164px);
+  --sp-1:clamp(18px,2.4vw,30px);
+  --sp-2:clamp(34px,4.8vw,64px);
+  --sp-3:clamp(52px,7vw,92px);
+
+  --fs-xs:clamp(10px,.95vw,12px);
+  --fs-sm:clamp(12px,1.02vw,14px);
+  --fs-body:clamp(14.5px,1.12vw,17px);
+  --fs-lead:clamp(17px,1.55vw,22px);
+  --fs-h3:clamp(20px,2.1vw,28px);
+  --fs-h2:clamp(32px,4.4vw,62px);
+  --fs-display:clamp(52px,9vw,130px);
+  --fs-code:clamp(30px,5vw,74px);
+
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body,h1,h2,h3,p,ul,ol,li,figure,blockquote{margin:0;padding:0}
+ul,ol{list-style:none}
+a{color:inherit}
+button{font:inherit}
+
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",YuGothic,Meiryo,sans-serif;
+  font-size:var(--fs-body);
+  font-weight:600;
+  line-height:1.72;
+  letter-spacing:-.022em;
+  font-feature-settings:"palt" 1;
+  font-kerning:normal;
+  line-break:strict;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+html[data-lang="en"] body{letter-spacing:-.018em;font-feature-settings:normal}
+.ja-only,.en-only{display:inline}
+html[data-lang="ja"] .en-only{display:none!important}
+html[data-lang="en"] .ja-only{display:none!important}
+
+.wrap{
+  width:100%;max-width:var(--max);margin-inline:auto;padding-inline:var(--gut);
+  display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);
+}
+.wrap>*{grid-column:1/-1}
+
+.progress{position:fixed;inset:0 0 auto 0;height:2px;z-index:90;pointer-events:none}
+.progress i{display:block;width:0;height:100%;background:var(--green);transition:width .1s linear}
+.progress.on-dark i{background:var(--white)}
+
+.topbar{
+  position:fixed;inset:0 0 auto 0;z-index:80;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:18px var(--gut);
+  font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);
+  transition:color .3s var(--ease),background-color .3s var(--ease),border-color .3s var(--ease);
+}
+.topbar.is-solid{background:var(--topbar-bg);backdrop-filter:saturate(150%) blur(18px);-webkit-backdrop-filter:saturate(150%) blur(18px);border-bottom:1px solid var(--line)}
+.topbar__brand{display:flex;align-items:center;pointer-events:none;line-height:0}
+.topbar__logo{display:block;width:auto;height:51px}
+.topbar__logo--white{display:none}
+.topbar.on-dark .topbar__logo--green{display:none}
+.topbar.on-dark .topbar__logo--white{display:block}
+.topbar__actions{display:flex;align-items:center;gap:8px}
+.topbar__meta{margin-left:auto;margin-right:10px;pointer-events:none}
+.ui-btn{appearance:none;border:0;background:transparent;color:inherit;padding:8px 0 8px 14px;min-width:auto;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;line-height:1}
+.ui-btn:hover{opacity:.72}.ui-btn:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.topbar.on-dark{color:rgba(255,255,255,.72);border-bottom-color:rgba(255,255,255,.18)}
+.topbar.on-dark .topbar__brand{color:#fff}
+.topbar.on-dark.is-solid{background:rgba(4,38,21,.78)}
+
+.indicator{
+  position:fixed;right:var(--gut);bottom:max(18px,env(safe-area-inset-bottom));z-index:80;
+  display:flex;gap:.45em;align-items:baseline;
+  font-size:10.5px;letter-spacing:.14em;color:var(--muted);
+  opacity:0;transition:opacity .4s var(--ease),color .3s var(--ease);
+}
+.indicator.is-on{opacity:1}
+.indicator strong{font-size:12px;color:var(--ink);font-weight:600}
+.indicator.on-dark{color:rgba(255,255,255,.6)}
+.indicator.on-dark strong{color:#fff}
+
+.js .reveal{opacity:0;transform:translateY(14px)}
+.js .reveal.in{opacity:1;transform:none;transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:calc(var(--d,0)*70ms)}
+.reveal[data-d="1"]{--d:1}.reveal[data-d="2"]{--d:2}.reveal[data-d="3"]{--d:3}.reveal[data-d="4"]{--d:4}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}.js .reveal{opacity:1;transform:none;transition:none}*{animation:none!important}
+}
+
+/* ---------- HERO ---------- */
+.hero{
+  min-height:100svh;background:var(--green);color:#fff;
+  display:flex;align-items:stretch;padding:clamp(98px,14vh,148px) 0 clamp(44px,7vh,78px);
+}
+.hero .wrap{align-content:stretch}
+.hero__inner{display:flex;flex-direction:column;justify-content:space-between;min-height:calc(100svh - clamp(142px,21vh,226px));gap:50px}
+.hero__meta{font-size:var(--fs-xs);letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.72)}
+.hero__title{font-family:inherit;font-size:var(--fs-display);line-height:.88;letter-spacing:-.045em;font-weight:600;max-width:9ch}
+.hero__title span{display:block;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:.15em;line-height:1.2;letter-spacing:.22em;text-transform:uppercase;font-weight:600;margin-bottom:1.2em;color:rgba(255,255,255,.72)}
+.hero__foot{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;border-top:1px solid var(--line-dark);padding-top:var(--sp-1)}
+.hero__sub{max-width:32em;font-size:var(--fs-lead);line-height:1.7;color:rgba(255,255,255,.88)}
+.hero__scroll{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.66);white-space:nowrap}
+.hero__scroll i{display:block;width:54px;height:1px;background:rgba(255,255,255,.35);position:relative;overflow:hidden}
+.hero__scroll i::after{content:"";position:absolute;inset:0;background:#fff;animation:slide 2.6s var(--ease) infinite}
+@keyframes slide{0%{transform:translateX(-100%)}60%,100%{transform:translateX(100%)}}
+
+/* ---------- SECTION SYSTEM ---------- */
+.sec{padding:var(--sec-y) 0;border-bottom:1px solid var(--line)}
+.sec--green{background:var(--green);color:#fff;border-color:transparent}
+.sec--soft{background:var(--ui-soft)}
+
+.eyebrow{display:flex;align-items:center;gap:14px;margin-bottom:var(--sp-1);font-size:var(--fs-xs);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.eyebrow i{display:block;width:clamp(26px,3.5vw,50px);height:1px;background:var(--line)}
+.sec--green .eyebrow{color:rgba(255,255,255,.7)}
+.sec--green .eyebrow i{background:rgba(255,255,255,.32)}
+
+.h2{grid-column:1/span 9;font-family:inherit;font-size:var(--fs-h2);line-height:1.08;letter-spacing:-.035em;font-weight:600;margin-bottom:var(--sp-1)}
+.intro{grid-column:1/span 7;max-width:48em;font-size:var(--fs-lead);line-height:1.85;color:var(--ink-soft);margin-bottom:var(--sp-3)}
+.sec--green .intro{color:rgba(255,255,255,.83)}
+
+.rule{border-top:1px solid var(--line)}
+.sec--green .rule{border-top-color:rgba(255,255,255,.3)}
+
+.kicker{font-size:var(--fs-xs);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.sec--green .kicker{color:rgba(255,255,255,.66)}
+.mini{font-size:var(--fs-sm);line-height:1.75;color:var(--muted)}
+.sec--green .mini{color:rgba(255,255,255,.66)}
+
+/* ---------- 01 COLOR ---------- */
+.color-master{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);margin-bottom:var(--sp-3)}
+.swatch{grid-column:1/span 8;min-height:clamp(300px,46vw,620px);background:var(--green);color:#fff;padding:clamp(24px,4vw,54px);display:flex;flex-direction:column;justify-content:space-between}
+.swatch__label{font-size:var(--fs-xs);letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.68)}
+.swatch__code{font-family:inherit;font-size:var(--fs-code);line-height:.95;letter-spacing:-.04em}
+.swatch__note{max-width:34em;font-size:var(--fs-sm);line-height:1.7;color:rgba(255,255,255,.72)}
+.formula{grid-column:9/span 4;border-top:1px solid var(--ink);padding-top:16px;display:flex;flex-direction:column;justify-content:space-between;gap:36px}
+.formula__title{font-size:var(--fs-h3);font-weight:600;line-height:1.15}
+.formula__list li{display:flex;justify-content:space-between;gap:16px;padding:13px 0;border-top:1px solid var(--line);font-size:var(--fs-sm)}
+.formula__list strong{font-size:var(--fs-h3);line-height:1;font-weight:600}
+
+.value-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);border-top:1px solid var(--ink)}
+.value{grid-column:span 3;padding:18px 0 10px;border-bottom:1px solid var(--line);min-height:118px}
+.value+.value{padding-left:clamp(10px,1.5vw,20px);border-left:1px solid var(--line)}
+.value__name{font-size:var(--fs-xs);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+.value__main{font-size:clamp(19px,2vw,26px);font-weight:600;line-height:1.2}
+.value__main.pending{font-weight:600;color:var(--muted)}
+.copy{margin-top:12px;border:0;background:none;padding:0;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ui);cursor:pointer}
+.copy:focus-visible{outline:2px solid var(--accent-ui);outline-offset:4px}
+
+
+/* ---------- 02 APPLICATION ---------- */
+.spec-list{border-top:1px solid var(--ink)}
+.spec-row{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);padding:var(--sp-1) 0;border-bottom:1px solid var(--line);align-items:start}
+.spec-row__n{grid-column:1/span 1;font-size:var(--fs-xs);color:var(--muted);letter-spacing:.12em}
+.spec-row__app{grid-column:2/span 4;font-size:var(--fs-h3);font-weight:600;line-height:1.35}
+.spec-row__app span{display:block;font-size:var(--fs-sm);font-weight:600;color:var(--muted);margin-top:4px}
+.spec-row__spec{grid-column:7/span 6;font-size:var(--fs-lead);line-height:1.55}
+.spec-row__spec span{display:block;font-size:var(--fs-sm);color:var(--muted);margin-top:8px;line-height:1.7}
+
+/* ---------- 03 TYPOGRAPHY ---------- */
+.type-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);row-gap:var(--gap)}
+.type-card{grid-column:span 6;border-top:1px solid var(--ink);padding-top:16px;min-height:430px;display:flex;flex-direction:column}
+.type-card__index{font-size:var(--fs-xs);letter-spacing:.14em;color:var(--muted);margin-bottom:var(--sp-2)}
+.type-card__sample{font-size:clamp(35px,4vw,62px);line-height:1.08;letter-spacing:-.025em;margin-bottom:auto;overflow-wrap:anywhere}
+.type-card[data-font="tetsubin"] .type-card__sample{font-family:"07鉄瓶ゴシック","07TetsubinGothic",sans-serif}
+.type-card__sample--svg{display:flex;align-items:center;min-height:150px;color:inherit}
+.type-card__sample--svg img{display:block;width:min(100%,360px);height:auto}
+.type-card[data-font="palatino"] .type-card__sample{font-family:Palatino,"Palatino Linotype","Book Antiqua",serif;font-weight:600}
+.type-card[data-font="panda"] .type-card__sample{font-family:"パンダベーカリー",pandabakery,cursive}
+.type-card[data-font="getshow"] .type-card__sample{font-family:"Get Show","GetShow",cursive;letter-spacing:0}
+.type-card.is-missing .type-card__sample:not(.type-card__sample--svg){font-family:inherit!important;font-weight:600!important;color:transparent;position:relative;user-select:none}
+.type-card.is-missing .type-card__sample:not(.type-card__sample--svg)::after{content:"PREVIEW HIDDEN\AFont not installed on this device";white-space:pre;position:absolute;inset:0;color:var(--muted);font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:var(--fs-sm);line-height:1.7;letter-spacing:.08em;text-transform:uppercase}
+.type-card__meta{border-top:1px solid var(--line);padding-top:18px;margin-top:var(--sp-2)}
+.type-card__name{font-size:var(--fs-h3);font-weight:600;line-height:1.3}
+.type-card__use{font-size:var(--fs-sm);color:var(--muted);margin-top:5px}
+.type-card__actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px}
+.font-status{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.font-status::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--line);margin-right:7px;vertical-align:1px}
+.type-card.is-installed .font-status{color:var(--accent-ui)}
+.type-card.is-installed .font-status::before{background:var(--accent-ui)}
+.font-status--embedded{color:var(--accent-ui)}
+.font-status--embedded::before{background:var(--accent-ui)}
+.font-link{font-size:10px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:3px}
+.font-note{margin-top:var(--sp-2);padding:18px 20px;background:var(--warn-bg);color:var(--warn);font-size:var(--fs-sm);line-height:1.75}
+
+/* ---------- 04 LOGO ---------- */
+.logo-preview{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);margin-bottom:var(--sp-3)}
+.logo-preview__item{grid-column:span 6;min-height:clamp(360px,44vw,610px);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--paper)}
+.logo-preview__item--green{background:var(--green)}
+.logo-preview__item img{display:block;width:min(62%,320px);height:auto;max-height:82%}
+.logo-preview__caption{grid-column:span 6;padding-top:12px;font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.logo-preview__caption--right{grid-column:7/span 6}
+.do-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap)}
+.do-col{grid-column:span 6;border-top:1px solid var(--ink);padding-top:16px}
+.do-col__head{font-size:var(--fs-h3);font-weight:600;margin-bottom:var(--sp-1)}
+.do-col ul li{padding:14px 0 14px 22px;border-top:1px solid var(--line);position:relative;line-height:1.65}
+.do-col ul li::before{position:absolute;left:0;top:14px;font-weight:600}
+.do-col--yes ul li::before{content:"+";color:var(--accent-ui)}
+.do-col--no ul li::before{content:"−";color:var(--warn)}
+
+
+.logo-downloads{
+  margin-top:var(--sp-2);
+  border-top:1px solid var(--ink);
+}
+.logo-downloads__head{
+  display:flex;align-items:baseline;justify-content:space-between;gap:20px;
+  padding:16px 0 10px;
+}
+.logo-downloads__head strong{font-size:var(--fs-h3);font-weight:600}
+.logo-downloads__head span{font-size:var(--fs-sm);color:var(--muted)}
+.logo-downloads__grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  border-top:1px solid var(--line);
+}
+.logo-download{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:18px 0;text-decoration:none;border-bottom:1px solid var(--line);
+  font-size:var(--fs-sm);
+}
+.logo-download:nth-child(odd){padding-right:var(--gap)}
+.logo-download:nth-child(even){padding-left:var(--gap);border-left:1px solid var(--line)}
+.logo-download__name{font-weight:600}
+.logo-download__meta{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.logo-download::after{content:"↓";font-size:16px;line-height:1;color:var(--accent-ui)}
+.logo-download:hover{opacity:.68}
+
+/* ---------- 05 INTERIOR ---------- */
+.paint-steps{counter-reset:paint;border-top:1px solid rgba(255,255,255,.35)}
+.paint-step{counter-increment:paint;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);padding:var(--sp-1) 0;border-bottom:1px solid rgba(255,255,255,.22)}
+.paint-step::before{content:"0" counter(paint);grid-column:1/span 1;font-size:var(--fs-xs);letter-spacing:.12em;color:rgba(255,255,255,.5)}
+.paint-step strong{grid-column:2/span 4;font-size:var(--fs-h3);line-height:1.35}
+.paint-step p{grid-column:7/span 6;color:rgba(255,255,255,.78);line-height:1.85}
+.matte{margin-top:var(--sp-2);font-family:inherit;font-size:clamp(30px,4vw,54px);line-height:1.2}
+
+/* ---------- 06 OPEN ITEMS ---------- */
+.open-list{border-top:1px solid var(--ink);counter-reset:open}
+.open-item{counter-increment:open;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);padding:var(--sp-1) 0;border-bottom:1px solid var(--line)}
+.open-item::before{content:"0" counter(open);grid-column:1/span 1;font-size:var(--fs-xs);letter-spacing:.12em;color:var(--muted)}
+.open-item h3{grid-column:2/span 4;font-size:var(--fs-h3);line-height:1.35}
+.open-item p{grid-column:7/span 6;color:var(--ink-soft);line-height:1.85}
+
+/* ---------- 07 RESOURCES ---------- */
+.resource-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);row-gap:var(--gap)}
+.resource{grid-column:span 4;border-top:1px solid rgba(255,255,255,.38);padding-top:16px;min-height:210px;display:flex;flex-direction:column}
+.resource__type{font-size:var(--fs-xs);letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.56)}
+.resource__name{font-size:var(--fs-h3);font-weight:600;margin-top:22px;line-height:1.35}
+.resource__desc{font-size:var(--fs-sm);color:rgba(255,255,255,.66);margin-top:8px;line-height:1.7}
+.resource__link{margin-top:auto;padding-top:24px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.resource__link span{border-bottom:1px solid currentColor;padding-bottom:3px}
+.resource--disabled{opacity:.52}
+.resource--disabled .resource__link{pointer-events:none}
+
+.final-note{margin-top:var(--sp-3);padding-top:var(--sp-1);border-top:1px solid rgba(255,255,255,.35);display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap)}
+.final-note__main{grid-column:1/span 8;font-family:inherit;font-size:clamp(28px,3.5vw,48px);line-height:1.3}
+.final-note__meta{grid-column:10/span 3;font-size:var(--fs-sm);color:rgba(255,255,255,.62);line-height:1.8}
+
+.foot{background:var(--green);color:rgba(255,255,255,.62);padding:0 0 32px}
+.foot__in{display:flex;justify-content:space-between;gap:16px;border-top:1px solid rgba(255,255,255,.22);padding-top:18px;font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.foot__utility{display:flex;justify-content:flex-start;align-items:center;margin-top:16px}
+.foot__link{display:inline-flex;align-items:center;gap:.45em;font-size:9.5px;line-height:1.4;letter-spacing:.03em;text-transform:none;color:rgba(255,255,255,.44);text-decoration:none;transition:color .2s ease}
+.foot__link::after{content:"↗";font-size:.92em;opacity:.72;transform:translateY(-.04em)}
+.foot__link:hover{color:rgba(255,255,255,.9)}
+
+@media(max-width:900px){
+  .h2,.intro{grid-column:1/-1}
+  .swatch{grid-column:1/-1}.formula{grid-column:1/-1;margin-top:var(--sp-2)}
+  .value{grid-column:span 6}.value:nth-child(3){border-left:0;padding-left:0}
+  .type-card{grid-column:1/-1;min-height:360px}
+  .spec-row__n{grid-column:1/span 1}.spec-row__app{grid-column:2/span 5}.spec-row__spec{grid-column:7/span 6}
+  .paint-step strong{grid-column:2/span 5}.paint-step p{grid-column:7/span 6}
+  .open-item h3{grid-column:2/span 5}.open-item p{grid-column:7/span 6}
+  .resource{grid-column:span 6}
+  .final-note__main{grid-column:1/span 8}.final-note__meta{grid-column:9/span 4}
+}
+
+@media(max-width:640px){
+  :root{--sec-y:76px;--gut:20px}
+  .topbar{padding-top:max(16px,env(safe-area-inset-top));padding-inline:16px}.topbar__logo{height:42px}.topbar__meta{display:none}.topbar__actions{gap:6px}.ui-btn{min-width:46px;padding:6px 8px}
+  .hero{padding-top:110px}.hero__foot{flex-direction:column;align-items:flex-start}.hero__scroll{align-self:flex-end}
+  .hero__title{font-size:clamp(54px,19vw,86px)}
+  .h2{font-size:clamp(34px,11vw,52px)}
+  .swatch{min-height:420px;padding:24px}
+  .formula{padding-bottom:10px}
+  .value{grid-column:1/-1;min-height:96px;border-left:0!important;padding-left:0!important;display:grid;grid-template-columns:1fr auto;column-gap:16px;align-items:start}
+  .value__name{margin-bottom:8px}.value__main{grid-column:1/2}.copy{grid-column:2/3;grid-row:1/3;align-self:center;margin-top:0}
+  .deprecated{grid-template-columns:auto 1fr}.deprecated__tag{grid-column:2}
+  .spec-row{row-gap:12px}.spec-row__n{grid-column:1/span 1}.spec-row__app{grid-column:2/-1}.spec-row__spec{grid-column:2/-1;font-size:var(--fs-body)}
+  .logo-preview__item,.logo-preview__caption,.logo-preview__caption--right{grid-column:1/-1}.logo-preview__item{min-height:430px}.logo-preview__caption--right{margin-bottom:var(--sp-1)}
+  .do-col{grid-column:1/-1}.do-col+.do-col{margin-top:var(--sp-2)}
+  .logo-downloads__head{align-items:flex-start;flex-direction:column;gap:4px}.logo-downloads__grid{grid-template-columns:1fr}.logo-download:nth-child(n){padding-left:0;padding-right:0;border-left:0}
+  .paint-step{row-gap:12px}.paint-step::before{grid-column:1/span 1}.paint-step strong{grid-column:2/-1}.paint-step p{grid-column:2/-1}
+  .open-item{row-gap:12px}.open-item::before{grid-column:1/span 1}.open-item h3{grid-column:2/-1}.open-item p{grid-column:2/-1}
+  .resource{grid-column:1/-1;min-height:180px}
+  .final-note__main,.final-note__meta{grid-column:1/-1}.final-note__meta{margin-top:24px}
+  .foot__in{flex-direction:column;gap:7px}
+  
+  .indicator{right:20px}
+}
+
+.pdf-link{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:8px 0 8px 14px;color:inherit;white-space:nowrap}
+.pdf-link:hover{opacity:.72}.pdf-link:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.neutral-detail{margin-top:var(--sp-2);display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);background:var(--offwhite);padding:clamp(24px,4vw,50px)}
+.neutral-detail__main{grid-column:1/span 5;display:flex;min-height:290px;flex-direction:column}
+.neutral-detail__main h3{font-size:clamp(30px,3.6vw,50px);line-height:1.02;letter-spacing:-.035em;margin-top:8px}
+.neutral-detail__main p{max-width:30em;color:var(--ink-soft);line-height:1.75;margin-top:18px}
+.neutral-detail__code{margin-top:auto;font-size:clamp(34px,4.6vw,66px);line-height:1;font-weight:600;letter-spacing:-.045em;color:var(--green)}
+.neutral-detail__spec{grid-column:7/span 6;border-top:1px solid rgba(22,49,40,.35);align-self:start}
+.neutral-detail__row{display:grid;grid-template-columns:minmax(110px,.7fr) 1.3fr;gap:18px;padding:17px 0;border-bottom:1px solid rgba(22,49,40,.16);align-items:baseline}
+.neutral-detail__row span{font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.neutral-detail__row strong{font-size:var(--fs-sm);font-weight:600;text-align:right;line-height:1.5}
+@media(max-width:640px){.neutral-detail{row-gap:42px}.neutral-detail__main,.neutral-detail__spec{grid-column:1/-1}.neutral-detail__main{min-height:245px}.neutral-detail__row{grid-template-columns:1fr}.neutral-detail__row strong{text-align:left}.pdf-link{padding-left:8px}}
+
+</style>
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<div class="progress" id="progress"><i id="progressBar"></i></div>
+<header class="topbar" id="topbar">
+  <span class="topbar__brand" aria-label="MATCHA TIMES"><img class="topbar__logo topbar__logo--green" src="assets/logo-horizontal-green.svg" alt="MATCHA TIMES"><img class="topbar__logo topbar__logo--white" src="assets/logo-horizontal-white.svg" alt="" aria-hidden="true"></span>
+<div class="topbar__actions"><a class="pdf-link ja-only" href="assets/MATCHA_TIMES_Franchise_Brand_Guide_JA.pdf" download="MATCHA_TIMES_Franchise_Brand_Guide_JA.pdf">PDF ↓</a><a class="pdf-link en-only" href="assets/MATCHA_TIMES_Franchise_Brand_Guide_EN.pdf" download="MATCHA_TIMES_Franchise_Brand_Guide_EN.pdf">PDF ↓</a>
+    <button class="ui-btn" id="langToggle" type="button" aria-label="Switch language">EN</button>
+</div>
+</header>
+<div class="indicator" id="indicator" aria-hidden="true"><strong id="indNum">01</strong><span>/</span><span>04</span></div>
+
+<main>
+<section class="hero" id="hero" data-dark="1">
+  <div class="wrap">
+    <div class="hero__inner">
+      <p class="hero__meta reveal">FRANCHISE BRAND GUIDE · 2026</p>
+      <h1 class="hero__title reveal" data-d="1">Brand<br>Standards</h1>
+      <div class="hero__foot">
+        <p class="hero__sub reveal" data-d="2"><span class="ja-only">For franchise stores &amp; production partners.<br>FC店舗・制作パートナー向け。</span><span class="en-only">For franchise stores &amp; production partners.</span></p>
+        <p class="hero__scroll reveal" data-d="3"><i></i>Scroll</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="s01" data-num="01">
+  <div class="wrap">
+    <p class="eyebrow reveal">01<i></i>Logo</p>
+    <h2 class="h2 reveal" data-d="1">Use the master artwork.</h2>
+    <p class="intro reveal" data-d="2"><span class="ja-only">Do not rebuild, retype or distort the logo. ロゴ色は 3435 C / White のみ。</span><span class="en-only">Do not rebuild, retype or distort the logo. Use only 3435 C or white.</span></p>
+
+    <div class="logo-preview reveal">
+      <div class="logo-preview__item logo-preview__item--green"><img src="assets/logo-vertical-white.svg" alt="MATCHA TIMES white logo on dark green"></div>
+      <div class="logo-preview__item"><img src="assets/logo-vertical-green.svg" alt="MATCHA TIMES PANTONE 3435 C logo"></div>
+      <p class="logo-preview__caption">White logo / PANTONE 3435 C</p>
+      <p class="logo-preview__caption logo-preview__caption--right">PANTONE 3435 C / Off-white or white</p>
+    </div>
+
+
+    <div class="logo-downloads reveal">
+      <div class="logo-downloads__head">
+        <strong>Logo Assets</strong>
+        <span class="ja-only">支給SVG / 縦・横</span><span class="en-only">Master SVG / vertical &amp; horizontal</span>
+      </div>
+      <div class="logo-downloads__grid">
+        <a class="logo-download" href="assets/logo-vertical-green.svg" download="MATCHA_TIMES_Logo_Vertical_Green.svg">
+          <span><span class="logo-download__name">Vertical · Green</span><br><span class="logo-download__meta">SVG</span></span>
+        </a>
+        <a class="logo-download" href="assets/logo-vertical-white.svg" download="MATCHA_TIMES_Logo_Vertical_White.svg">
+          <span><span class="logo-download__name">Vertical · White</span><br><span class="logo-download__meta">SVG</span></span>
+        </a>
+        <a class="logo-download" href="assets/logo-horizontal-green.svg" download="MATCHA_TIMES_Logo_Horizontal_Green.svg">
+          <span><span class="logo-download__name">Horizontal · Green</span><br><span class="logo-download__meta">SVG</span></span>
+        </a>
+        <a class="logo-download" href="assets/logo-horizontal-white.svg" download="MATCHA_TIMES_Logo_Horizontal_White.svg">
+          <span><span class="logo-download__name">Horizontal · White</span><br><span class="logo-download__meta">SVG</span></span>
+        </a>
+      </div>
+    </div>
+
+    <div class="do-grid">
+      <div class="do-col do-col--yes reveal">
+        <h3 class="do-col__head"><span class="ja-only">DO / してよいこと</span><span class="en-only">DO</span></h3>
+        <ul>
+          <li><span class="ja-only">濃緑の地に白のロゴを置く</span><span class="en-only">Place the white logo on the approved dark green background.</span></li>
+          <li><span class="ja-only">白または淡色の地に 3435 C のロゴを置く</span><span class="en-only">Place the 3435 C logo on white or an approved light background.</span></li>
+          <li><span class="ja-only">ロゴの高さの 1/4 以上のクリアスペースを取る</span><span class="en-only">Keep clear space of at least 1/4 of the logo height.</span></li>
+          <li><span class="ja-only">縦横比を保ったまま拡大・縮小する</span><span class="en-only">Scale proportionally and keep the original aspect ratio.</span></li>
+        </ul>
+      </div>
+      <div class="do-col do-col--no reveal" data-d="1">
+        <h3 class="do-col__head"><span class="ja-only">DO NOT / してはいけないこと</span><span class="en-only">DO NOT</span></h3>
+        <ul>
+          <li><span class="ja-only">緑と白以外へ色を変更する</span><span class="en-only">Do not change the logo to colours other than approved green and white.</span></li>
+          <li><span class="ja-only">写真の上へ直接置く</span><span class="en-only">Do not place the logo directly over photography.</span></li>
+          <li><span class="ja-only">縦横比を変える・傾ける・影や光彩を付ける</span><span class="en-only">Do not distort, rotate, add shadows or add glow effects.</span></li>
+          <li><span class="ja-only">円・葉・文字などの要素を分解して単独使用する</span><span class="en-only">Do not separate the circle, leaves or lettering for standalone use.</span></li>
+          <li><span class="ja-only">他のロゴや文字と接するほど近づける</span><span class="en-only">Do not crowd the logo with other logos or text.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="s02" data-num="02">
+  <div class="wrap">
+    <p class="eyebrow reveal">02<i></i>Brand Colour</p>
+    <h2 class="h2 reveal" data-d="1">One brand colour.<br>PANTONE 3435 C.</h2>
+    <p class="intro reveal" data-d="2"><span class="ja-only">PANTONE 3435 C is the master. 印刷・Web・サイン・内装・ロゴ、すべてこの色を基準にします。</span><span class="en-only">PANTONE 3435 C is the master colour for print, digital, signage, interiors and logo applications.</span></p>
+
+    <div class="color-master">
+      <div class="swatch reveal" data-d="2">
+        <p class="swatch__label">Master Colour / Spot</p>
+        <p class="swatch__code">PANTONE<br>3435 C</p>
+        <p class="swatch__note">Digital reference · HEX #154734 · RGB 21 / 71 / 52</p>
+      </div>
+      <aside class="formula reveal" data-d="3">
+        <div>
+          <p class="kicker">Spot Ink Formula</p>
+          <p class="formula__title">Printer specification</p>
+        </div>
+        <ul class="formula__list">
+          <li><span>PANTONE GREEN</span><strong>75.00</strong></li>
+          <li><span>PANTONE YELLOW</span><strong>5.00</strong></li>
+          <li><span>PANTONE BLACK</span><strong>20.00</strong></li>
+        </ul>
+        <p class="mini"><span class="ja-only">PANTONE 3435 C 現物チップの配合表記。</span><span class="en-only">Formula shown on the physical PANTONE 3435 C chip.</span></p>
+      </aside>
+    </div>
+
+    <div class="value-grid reveal">
+      <div class="value">
+        <p class="value__name">Master</p>
+        <p class="value__main">PANTONE 3435 C</p>
+        <button class="copy" type="button" data-copy="PANTONE 3435 C">Copy</button>
+      </div>
+      <div class="value">
+        <p class="value__name">Digital</p>
+        <p class="value__main">#154734<br><span class="mini">RGB 21 / 71 / 52</span></p>
+        <button class="copy" type="button" data-copy="#154734">Copy</button>
+      </div>
+      <div class="value">
+        <p class="value__name">Process Print</p>
+        <p class="value__main">C93 M24 Y85 K68</p>
+        <button class="copy" type="button" data-copy="C93 M24 Y85 K68">Copy</button>
+      </div>
+      <div class="value">
+        <p class="value__name">Logo White</p>
+        <p class="value__main">#FFFFFF</p>
+        <button class="copy" type="button" data-copy="#FFFFFF">Copy</button>
+      </div>
+    </div>
+
+    <div class="neutral-detail reveal" data-d="1">
+      <div class="neutral-detail__main">
+        <p class="kicker">Off-white</p>
+        <h3>Supporting Neutral</h3>
+        <p><span class="ja-only">背景・カード・淡色面に使用する補助色。ブランドの第2カラーではありません。</span><span class="en-only">A supporting neutral for backgrounds, cards and light surfaces. It is not a second brand colour.</span></p>
+        <div class="neutral-detail__code">#F5F2E8</div>
+      </div>
+      <div class="neutral-detail__spec">
+        <div class="neutral-detail__row"><span>HEX</span><strong>#F5F2E8</strong></div>
+        <div class="neutral-detail__row"><span>RGB</span><strong>245 / 242 / 232</strong></div>
+        <div class="neutral-detail__row"><span>CMYK</span><strong>0 / 1 / 5 / 4</strong></div>
+        <div class="neutral-detail__row"><span>Application</span><strong>Backgrounds / Cards / Light surfaces</strong></div>
+        <div class="neutral-detail__row"><span>Note</span><strong><span class="ja-only">ロゴの白には使用しない。ロゴの白は #FFFFFF。</span><span class="en-only">Do not use as logo white. Logo white is #FFFFFF.</span></strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="s03" data-num="03">
+  <div class="wrap">
+    <p class="eyebrow reveal">03<i></i>Typography</p>
+    <h2 class="h2 reveal" data-d="1">Four typefaces.<br>Fixed roles.</h2>
+    <p class="intro reveal" data-d="2"><span class="ja-only">Use each typeface only for its assigned role. 用途を入れ替えない。</span><span class="en-only">Use each typeface only for its assigned role.</span></p>
+
+    <div class="type-grid">
+      <article class="type-card reveal" data-font="tetsubin">
+        <p class="type-card__index">01 / LOGOTYPE</p>
+        <div class="type-card__sample type-card__sample--svg"><img src="assets/logo-horizontal-green.svg" alt="MATCHA TIMES logotype"></div>
+        <div class="type-card__meta">
+          <h3 class="type-card__name"><span class="ja-only">07鉄瓶ゴシック</span><span class="en-only">07 Tetsubin Gothic</span></h3>
+          <p class="type-card__use"><span class="ja-only">ロゴタイプ / 店名表記</span><span class="en-only">Logotype / Store name</span></p>
+          <div class="type-card__actions"><span class="font-status font-status--embedded">Embedded SVG preview</span><a class="font-link" href="https://booth.pm/ja/items/3970314" target="_blank" rel="noopener">Get font ↗</a></div>
+        </div>
+      </article>
+
+      <article class="type-card reveal" data-d="1" data-font="palatino">
+        <p class="type-card__index">02 / TAGLINE</p>
+        <p class="type-card__sample">100%<br>JAPANESE<br>MATCHA</p>
+        <div class="type-card__meta">
+          <h3 class="type-card__name">Palatino Bold</h3>
+          <p class="type-card__use"><span class="ja-only">タグライン / 英文見出し</span><span class="en-only">Tagline / English headings</span></p>
+          <div class="type-card__actions"><span class="font-status">Checking font</span><a class="font-link" href="https://zapf-alphabets.com/fonts/palatino/" target="_blank" rel="noopener">Get / license ↗</a></div>
+        </div>
+      </article>
+
+      <article class="type-card reveal" data-d="2" data-font="panda">
+        <p class="type-card__index">03 / PHRASE</p>
+        <p class="type-card__sample">MATCHA<br>PHRASE</p>
+        <div class="type-card__meta">
+          <h3 class="type-card__name"><span class="ja-only">パンダベーカリー</span><span class="en-only">Panda Bakery</span></h3>
+          <p class="type-card__use"><span class="ja-only">合言葉 / 手書き調のあしらい</span><span class="en-only">Brand phrases / Handwritten accents</span></p>
+          <div class="type-card__actions"><span class="font-status">Checking font</span><a class="font-link" href="https://designpocket.jp/font/detail/24047" target="_blank" rel="noopener">Buy / download ↗</a></div>
+        </div>
+      </article>
+
+      <article class="type-card reveal" data-d="3" data-font="getshow">
+        <p class="type-card__index">04 / THANK YOU MARK</p>
+        <p class="type-card__sample">Thank you so<br>Matcha!</p>
+        <div class="type-card__meta">
+          <h3 class="type-card__name">Get Show</h3>
+          <p class="type-card__use"><span class="ja-only">「Thank you so Matcha」マーク専用</span><span class="en-only">“Thank you so Matcha” mark</span></p>
+          <div class="type-card__actions"><span class="font-status">Checking font</span><a class="font-link" href="https://www.dafont.com/get-show.font" target="_blank" rel="noopener">Get font ↗</a></div>
+        </div>
+      </article>
+    </div>
+
+    
+  </div>
+</section>
+
+<section class="sec sec--green" id="s04" data-num="04" data-dark="1">
+  <div class="wrap">
+    <p class="eyebrow reveal">04<i></i>Interior Paint</p>
+    <h2 class="h2 reveal" data-d="1">Match the physical 3435 C chip.</h2>
+    <p class="intro reveal" data-d="2"><span class="ja-only">The physical PANTONE 3435 C chip is the master. 塗料は現物チップの発色に合わせて選定・調合します。</span><span class="en-only">Use the physical PANTONE 3435 C chip as the master reference. Select or custom-mix paint to match it.</span></p>
+    <ol class="paint-steps">
+      <li class="paint-step reveal"><strong>Physical chip</strong><p><span class="ja-only">画面や印刷した見本ではなく、PANTONE 3435 C の現物チップを使用。</span><span class="en-only">Use the physical PANTONE 3435 C chip, not a screen or printed screenshot.</span></p></li>
+      <li class="paint-step reveal" data-d="1"><strong>Match in daylight</strong><p><span class="ja-only">自然光で色合わせ。既製色または調色で 3435 C に合わせる。</span><span class="en-only">Match in daylight. Use ready-mixed or custom-tinted paint to reach the 3435 C appearance.</span></p></li>
+      <li class="paint-step reveal" data-d="2"><strong>Test after drying</strong><p><span class="ja-only">試し塗りし、完全乾燥後に現物チップと比較。</span><span class="en-only">Apply a test area and compare with the physical chip after the paint is fully dry.</span></p></li>
+      <li class="paint-step reveal" data-d="3"><strong>Matte finish only.</strong><p><span class="ja-only">仕上げはつや消しのみ。光沢・半光沢は使用しない。</span><span class="en-only">Use a matte finish only. Do not use gloss or semi-gloss finishes.</span></p></li>
+    </ol>
+  </div>
+</section>
+
+
+</main>
+
+<footer class="foot" data-dark="1">
+  <div class="wrap">
+    <div class="foot__in"><span>MATCHA TIMES · HEADQUARTERS</span><span>Franchise Brand Guide / 2026</span></div>
+    <div class="foot__utility"><a class="foot__link" href="https://matcha-times-japan.pages.dev/" target="_blank" rel="noopener">matcha-times-japan.pages.dev</a></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+
+
+  var root=document.documentElement;
+  var langToggle=document.getElementById('langToggle');
+
+  function applyLang(lang){
+    lang=(lang==='en')?'en':'ja';
+    root.setAttribute('data-lang',lang);
+    root.setAttribute('lang',lang);
+    try{localStorage.setItem('mt-brand-lang-v2',lang)}catch(e){}
+    if(langToggle){langToggle.textContent=lang==='ja'?'EN':'JP';langToggle.setAttribute('aria-label',lang==='ja'?'Switch to English':'日本語に切り替え')}
+  }
+  var savedLang='en';
+  try{savedLang=localStorage.getItem('mt-brand-lang-v2')||'en'}catch(e){}
+  applyLang(savedLang);
+  if(langToggle)langToggle.addEventListener('click',function(){applyLang(root.getAttribute('data-lang')==='ja'?'en':'ja')});
+
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var revealables=document.querySelectorAll('.reveal');
+  if(reduce||!('IntersectionObserver' in window)){
+    revealables.forEach(function(el){el.classList.add('in')});
+  }else{
+    var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})}, {rootMargin:'0px 0px -10% 0px',threshold:.1});
+    revealables.forEach(function(el){io.observe(el)});
+  }
+
+  var bar=document.getElementById('progressBar');
+  var progress=document.getElementById('progress');
+  var indicator=document.getElementById('indicator');
+  var indNum=document.getElementById('indNum');
+  var topbar=document.getElementById('topbar');
+  var hero=document.getElementById('hero');
+  var sections=Array.prototype.slice.call(document.querySelectorAll('[data-num]'));
+  var darks=Array.prototype.slice.call(document.querySelectorAll('[data-dark]'));
+  var ticking=false;
+
+  function frame(){
+    ticking=false;
+    var y=window.pageYOffset;
+    var max=document.documentElement.scrollHeight-window.innerHeight;
+    if(bar)bar.style.width=(max>0?(y/max)*100:0)+'%';
+    var pastHero=hero?y>hero.offsetHeight*.7:y>400;
+    if(indicator)indicator.classList.toggle('is-on',pastHero);
+
+    var current=null;
+    sections.forEach(function(s){if(s.getBoundingClientRect().top<=window.innerHeight*.44)current=s});
+    if(indNum)indNum.textContent=current?current.getAttribute('data-num'):'01';
+
+    function overDarkAt(px){return darks.some(function(el){var r=el.getBoundingClientRect();return r.top<px&&r.bottom>px})}
+    if(indicator)indicator.classList.toggle('on-dark',overDarkAt(window.innerHeight-32));
+    if(topbar)topbar.classList.toggle('on-dark',overDarkAt(28));
+    if(progress)progress.classList.toggle('on-dark',overDarkAt(1));
+    if(topbar)topbar.classList.toggle('is-solid',y>24);
+  }
+  function onScroll(){if(ticking)return;ticking=true;requestAnimationFrame(frame)}
+  window.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('resize',onScroll,{passive:true});
+  frame();
+
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var text=btn.getAttribute('data-copy')||'';
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){var old=btn.textContent;btn.textContent='Copied';setTimeout(function(){btn.textContent=old},1200)});
+      }
+    });
+  });
+
+  function fontAvailable(names){
+    if(!document.fonts||!document.fonts.check)return false;
+    return names.some(function(name){try{return document.fonts.check("32px '"+name+"'")}catch(e){return false}});
+  }
+  var probes={
+    tetsubin:['07鉄瓶ゴシック','07TetsubinGothic'],
+    palatino:['Palatino','Palatino Linotype'],
+    panda:['パンダベーカリー','pandabakery'],
+    getshow:['Get Show','GetShow']
+  };
+  document.querySelectorAll('.type-card[data-font]').forEach(function(card){
+    var key=card.getAttribute('data-font');
+    if(key==='tetsubin'){
+      card.classList.add('is-installed');
+      return;
+    }
+    var ok=fontAvailable(probes[key]||[]);
+    card.classList.add(ok?'is-installed':'is-missing');
+    var status=card.querySelector('.font-status');
+    if(status)status.textContent=ok?'Installed / live preview':'Not installed';
+  });
+})();
+</script>
+</body>
+</html>
