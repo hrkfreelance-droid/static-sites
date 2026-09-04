@@ -213,8 +213,6 @@ html[data-lang="en"] .ja-only{display:none!important}
 .type-card__sample--svg{display:flex;align-items:center;min-height:150px;color:inherit}
 .type-card__sample--svg img{display:block;width:min(100%,360px);height:auto}
 .type-card[data-font="palatino"] .type-card__sample{font-family:Palatino,"Palatino Linotype","Book Antiqua",serif;font-weight:600}
-.type-card[data-font="panda"] .type-card__sample{font-family:"パンダベーカリー",pandabakery,cursive}
-.type-card[data-font="getshow"] .type-card__sample{font-family:"Get Show","GetShow",cursive;letter-spacing:0}
 .type-card.is-missing .type-card__sample:not(.type-card__sample--svg){font-family:inherit!important;font-weight:600!important;color:transparent;position:relative;user-select:none}
 .type-card.is-missing .type-card__sample:not(.type-card__sample--svg)::after{content:"PREVIEW HIDDEN\AFont not installed on this device";white-space:pre;position:absolute;inset:0;color:var(--muted);font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:var(--fs-sm);line-height:1.7;letter-spacing:.08em;text-transform:uppercase}
 .type-card__meta{border-top:1px solid var(--line);padding-top:18px;margin-top:var(--sp-2)}
@@ -514,7 +512,7 @@ html[data-lang="en"] .ja-only{display:none!important}
 <section class="sec" id="s03" data-num="03">
   <div class="wrap">
     <p class="eyebrow reveal">03<i></i>Typography</p>
-    <h2 class="h2 reveal" data-d="1">Four typefaces.<br>Fixed roles.</h2>
+    <h2 class="h2 reveal" data-d="1">Three typefaces.<br>Fixed roles.</h2>
     <p class="intro reveal" data-d="2"><span class="ja-only">Use each typeface only for its assigned role. 用途を入れ替えない。</span><span class="en-only">Use each typeface only for its assigned role.</span></p>
 
     <div class="type-grid">
@@ -537,24 +535,13 @@ html[data-lang="en"] .ja-only{display:none!important}
           <div class="type-card__actions"><span class="font-status">Checking font</span><a class="font-link" href="https://zapf-alphabets.com/fonts/palatino/" target="_blank" rel="noopener">Get / license ↗</a></div>
         </div>
       </article>
-
-      <article class="type-card reveal" data-d="2" data-font="panda">
-        <p class="type-card__index">03 / PHRASE</p>
-        <p class="type-card__sample">MATCHA<br>PHRASE</p>
-        <div class="type-card__meta">
-          <h3 class="type-card__name"><span class="ja-only">パンダベーカリー</span><span class="en-only">Panda Bakery</span></h3>
-          <p class="type-card__use"><span class="ja-only">合言葉 / 手書き調のあしらい</span><span class="en-only">Brand phrases / Handwritten accents</span></p>
-          <div class="type-card__actions"><span class="font-status">Checking font</span><a class="font-link" href="https://designpocket.jp/font/detail/24047" target="_blank" rel="noopener">Buy / download ↗</a></div>
-        </div>
-      </article>
-
-      <article class="type-card reveal" data-d="3" data-font="getshow">
-        <p class="type-card__index">04 / THANK YOU MARK</p>
-        <p class="type-card__sample">Thank you so<br>Matcha!</p>
+      <article class="type-card reveal" data-d="2">
+        <p class="type-card__index">03 / THANK YOU MARK</p>
+        <div class="type-card__sample type-card__sample--svg"><img src="assets/get-show-thank-you-mark.svg" alt="Thank you so Matcha! — Get Show"></div>
         <div class="type-card__meta">
           <h3 class="type-card__name">Get Show</h3>
           <p class="type-card__use"><span class="ja-only">「Thank you so Matcha」マーク専用</span><span class="en-only">“Thank you so Matcha” mark</span></p>
-          <div class="type-card__actions"><span class="font-status">Checking font</span><a class="font-link" href="https://www.dafont.com/get-show.font" target="_blank" rel="noopener">Get font ↗</a></div>
+          <div class="type-card__actions"><span class="font-status font-status--embedded">Embedded SVG preview</span><a class="font-link" href="https://www.dafont.com/get-show.font" target="_blank" rel="noopener">Get font ↗</a></div>
         </div>
       </article>
     </div>
@@ -665,8 +652,6 @@ html[data-lang="en"] .ja-only{display:none!important}
   var probes={
     tetsubin:['07鉄瓶ゴシック','07TetsubinGothic'],
     palatino:['Palatino','Palatino Linotype'],
-    panda:['パンダベーカリー','pandabakery'],
-    getshow:['Get Show','GetShow']
   };
   document.querySelectorAll('.type-card[data-font]').forEach(function(card){
     var key=card.getAttribute('data-font');
