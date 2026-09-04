@@ -1,0 +1,54 @@
+name: Temporary source match audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/source-match-audit.yml'
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compare known GitHub HTML with live Pages HTML
+        run: |
+          set -euo pipefail
+          compare() {
+            label="$1"
+            raw="$2"
+            live="$3"
+            a=$(mktemp)
+            b=$(mktemp)
+            curl -fsSL --compressed "$raw" -o "$a"
+            curl -fsSL --compressed "${live}?source_match=$(date +%s%N)" -o "$b"
+            raw_sha=$(sha256sum "$a" | awk '{print $1}')
+            live_sha=$(sha256sum "$b" | awk '{print $1}')
+            raw_size=$(wc -c < "$a" | tr -d ' ')
+            live_size=$(wc -c < "$b" | tr -d ' ')
+            if cmp -s "$a" "$b"; then exact=true; else exact=false; fi
+            echo "$label exact=$exact raw_size=$raw_size live_size=$live_size raw_sha=$raw_sha live_sha=$live_sha"
+          }
+
+          compare 'indonesia/root' \
+            'https://raw.githubusercontent.com/hrkfreelance-droid/matcha-times-indonesia/main/index.html' \
+            'https://matcha-times-indonesia.pages.dev/'
+
+          compare 'pakistan/root' \
+            'https://raw.githubusercontent.com/hrkfreelance-droid/matcha-times-pakistan/main/index.html' \
+            'https://matcha-times-pakistan.pages.dev/'
+
+          compare 'asakusa-preview->asakusa' \
+            'https://raw.githubusercontent.com/hrkfreelance-droid/matcha-times-japan-asakusa-preview/main/index.html' \
+            'https://matcha-times-asakusa.pages.dev/'
+
+          compare 'asakusa-preview->japan' \
+            'https://raw.githubusercontent.com/hrkfreelance-droid/matcha-times-japan-asakusa-preview/main/index.html' \
+            'https://matcha-times-japan.pages.dev/'
+
+          compare 'website/en->cambodia' \
+            'https://raw.githubusercontent.com/hrkfreelance-droid/matcha-times-website/main/en/index.html' \
+            'https://matcha-times-cambodia.pages.dev/'
+
+          compare 'website/en->thailand' \
+            'https://raw.githubusercontent.com/hrkfreelance-droid/matcha-times-website/main/en/index.html' \
+            'https://matcha-times-thailand.pages.dev/'
