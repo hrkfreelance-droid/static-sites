@@ -1,0 +1,148 @@
+name: Refresh Cloudflare Web Analytics
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cloudflare-analytics-refresh.yml'
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Redeploy analytics-enabled MATCHA and Machida Pages projects
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${CF_API_TOKEN:-}" ] || [ -z "${CF_ACCOUNT_ID:-}" ]; then
+            echo "Required Cloudflare secrets are not available."
+            exit 1
+          fi
+
+          auth=(-H "Authorization: Bearer ${CF_API_TOKEN}" -H 'Content-Type: application/json')
+          api="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}"
+
+          curl -fsS "${auth[@]}" "${api}/pages/projects" -o /tmp/projects.json
+
+          python3 - /tmp/projects.json > /tmp/targets.tsv <<'PY'
+          import json, re, sys
+          data = json.load(open(sys.argv[1]))
+          if not data.get('success'):
+              raise SystemExit('Pages API success=false')
+
+          for p in data.get('result', []):
+              name = p.get('name') or ''
+              subdomain = p.get('subdomain') or ''
+              domains = p.get('domains') or []
+              if not re.search(r'(matcha|machida)', ' '.join([name, subdomain, *domains]), re.I):
+                  continue
+              canonical = p.get('canonical_deployment') or {}
+              latest = p.get('latest_deployment') or {}
+              project_cfg = p.get('build_config') or {}
+              canonical_cfg = canonical.get('build_config') or {}
+              latest_cfg = latest.get('build_config') or {}
+              has_tag = bool(project_cfg.get('web_analytics_tag') or canonical_cfg.get('web_analytics_tag') or latest_cfg.get('web_analytics_tag'))
+              has_token = bool(project_cfg.get('web_analytics_token') or canonical_cfg.get('web_analytics_token') or latest_cfg.get('web_analytics_token'))
+              dep_id = canonical.get('id') or latest.get('id') or ''
+              print('\t'.join([name, subdomain, dep_id, str(has_tag and has_token).lower()]))
+          PY
+
+          echo '=== REFRESH RESULTS ==='
+          failures=0
+          while IFS=$'\t' read -r project subdomain deployment_id analytics_ready; do
+            [ -n "$project" ] || continue
+
+            if [ "$analytics_ready" != "true" ]; then
+              echo "project=${project} status=SKIP_NO_ANALYTICS_CONFIG"
+              continue
+            fi
+
+            if [ -z "$deployment_id" ]; then
+              echo "project=${project} status=FAIL_NO_PRODUCTION_DEPLOYMENT"
+              failures=$((failures + 1))
+              continue
+            fi
+
+            response="/tmp/retry-${project}.json"
+            http=$(curl -sS -o "$response" -w '%{http_code}' -X POST "${auth[@]}" \
+              "${api}/pages/projects/${project}/deployments/${deployment_id}/retry")
+
+            if [ "$http" -lt 200 ] || [ "$http" -ge 300 ]; then
+              echo "project=${project} status=FAIL_RETRY_HTTP_${http}"
+              python3 - "$response" <<'PY'
+          import json, sys
+          try:
+              data = json.load(open(sys.argv[1]))
+              for err in data.get('errors', []):
+                  print(f"  error_code={err.get('code')} error_message={err.get('message')}")
+          except Exception:
+              pass
+          PY
+              failures=$((failures + 1))
+              continue
+            fi
+
+            new_id=$(python3 - "$response" <<'PY'
+          import json, sys
+          data = json.load(open(sys.argv[1]))
+          print((data.get('result') or {}).get('id') or '')
+          PY
+          )
+
+            if [ -z "$new_id" ]; then
+              echo "project=${project} status=FAIL_NO_RETRY_DEPLOYMENT_ID"
+              failures=$((failures + 1))
+              continue
+            fi
+
+            final_status=""
+            for attempt in $(seq 1 60); do
+              sleep 5
+              status_json="/tmp/status-${project}.json"
+              status_http=$(curl -sS -o "$status_json" -w '%{http_code}' "${auth[@]}" \
+                "${api}/pages/projects/${project}/deployments/${new_id}")
+              if [ "$status_http" -lt 200 ] || [ "$status_http" -ge 300 ]; then
+                continue
+              fi
+              final_status=$(python3 - "$status_json" <<'PY'
+          import json, sys
+          data = json.load(open(sys.argv[1]))
+          print((((data.get('result') or {}).get('latest_stage') or {}).get('status')) or '')
+          PY
+          )
+              case "$final_status" in
+                success|failure|canceled) break ;;
+              esac
+            done
+
+            if [ "$final_status" != "success" ]; then
+              echo "project=${project} status=FAIL_DEPLOY_${final_status:-timeout}"
+              failures=$((failures + 1))
+              continue
+            fi
+
+            beacon="false"
+            if [ -n "$subdomain" ]; then
+              html="/tmp/html-${project}.txt"
+              if curl -fsSL --compressed "https://${subdomain}/?cf_analytics_check=$(date +%s)" -o "$html"; then
+                if grep -Eqi 'static\.cloudflareinsights\.com/beacon\.min\.js|data-cf-beacon' "$html"; then
+                  beacon="true"
+                fi
+              fi
+            fi
+
+            echo "project=${project} status=DEPLOY_SUCCESS beacon_present=${beacon}"
+          done < /tmp/targets.tsv
+
+          if [ "$failures" -gt 0 ]; then
+            echo "Refresh completed with ${failures} deployment failure(s)."
+            exit 1
+          fi
+
+          echo 'Refresh completed. Projects without analytics configuration were left unchanged.'
