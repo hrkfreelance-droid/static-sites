@@ -35,7 +35,6 @@ jobs:
           auth=(-H "Authorization: Bearer ${CF_API_TOKEN}")
           index='japan-site/index.html'
 
-          # Source must contain only the intended visible state.
           test -f "$index"
           grep -Fq 'MATCHA TIMES Asakusa' "$index"
           grep -Fq '>📞 Call</a>' "$index"
@@ -56,7 +55,6 @@ jobs:
           print('project_check=PASS')
           PY
 
-          # Capture current working production deployment as rollback target.
           curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments" -o /tmp/deployments.json
           good_id=$(python3 - /tmp/deployments.json <<'PY'
           import json,sys
@@ -75,7 +73,6 @@ jobs:
           [ -n "$good_id" ]
           curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments/${good_id}" -o /tmp/good.json
 
-          # Copy current production manifest and replace index.html hash only.
           python3 - /tmp/good.json japan-site /tmp/manifest-new.json /tmp/index-upload.json /tmp/all-hashes.json /tmp/new-hash.txt <<'PY'
           import base64, hashlib, json, os, sys
           dep_file, root, manifest_out, upload_out, hashes_out, hash_out = sys.argv[1:]
@@ -115,7 +112,6 @@ jobs:
           PY
           new_hash=$(cat /tmp/new-hash.txt)
 
-          # Get short-lived Pages asset JWT.
           curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/upload-token" -o /tmp/upload-token.json
           upload_jwt=$(python3 - /tmp/upload-token.json <<'PY'
           import json,sys
@@ -125,7 +121,6 @@ jobs:
           [ -n "$upload_jwt" ]
           echo "::add-mask::${upload_jwt}"
 
-          # Ensure new index asset exists.
           printf '{"hashes":["%s"]}' "$new_hash" > /tmp/check.json
           curl -fsS -X POST \
             -H "Authorization: Bearer ${upload_jwt}" \
@@ -154,7 +149,6 @@ jobs:
             echo 'index_upload=ALREADY_PRESENT'
           fi
 
-          # Critical Pages Direct Upload step: register the complete manifest hash set.
           curl -fsS -X POST \
             -H "Authorization: Bearer ${upload_jwt}" \
             -H 'Content-Type: application/json' \
@@ -177,6 +171,7 @@ jobs:
               --form-string "commit_hash=${source_commit}" \
               --form-string "commit_message=${message}" \
               --form-string "manifest=$(cat /tmp/manifest-new.json)" \
+              --form-string 'pages_build_output_dir=.' \
               -o "$output"
             python3 - "$output" <<'PY'
           import json,sys
@@ -224,9 +219,8 @@ jobs:
             return 1
           }
 
-          # Preview gate: production is untouched until this exact manifest serves correctly.
-          preview_branch="remove-delivery-preview-20260909"
-          preview_info=$(create_deployment "$preview_branch" 'Preview remove obsolete delivery button' /tmp/preview.json)
+          preview_branch="remove-delivery-preview-20260909b"
+          preview_info=$(create_deployment "$preview_branch" 'Preview remove obsolete delivery button v2' /tmp/preview.json)
           preview_id=${preview_info%%|*}
           preview_url=${preview_info#*|}
           [ -n "$preview_id" ] && [ -n "$preview_url" ]
@@ -234,7 +228,6 @@ jobs:
           verify_url "$preview_url" yes
           echo 'preview_verify=PASS'
 
-          # Production deploy, with automatic rollback on any live verification failure.
           prod_info=$(create_deployment main 'Remove obsolete delivery button' /tmp/prod.json)
           prod_id=${prod_info%%|*}
           [ -n "$prod_id" ]
