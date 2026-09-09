@@ -33,36 +33,36 @@ jobs:
           grep -Fq 'MATCHA TIMES Asakusa' japan-site/index.html
           echo 'source_check=PASS'
 
-      - name: Resolve existing Cloudflare Pages project by production hostname
+      - name: Confirm existing Cloudflare Pages production project
         id: resolve
         shell: bash
         env:
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TARGET_HOST: matcha-times-japan.pages.dev
+          PROJECT_NAME: matcha-times-japan
         run: |
           set -euo pipefail
           api="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}"
           curl -fsS \
             -H "Authorization: Bearer ${CF_API_TOKEN}" \
-            "${api}/pages/projects?per_page=100" \
-            -o /tmp/projects.json
-          project=$(python3 - /tmp/projects.json "$TARGET_HOST" <<'PY'
+            "${api}/pages/projects/${PROJECT_NAME}" \
+            -o /tmp/project.json
+          python3 - /tmp/project.json "$PROJECT_NAME" "$TARGET_HOST" <<'PY'
           import json, sys
           data = json.load(open(sys.argv[1]))
-          host = sys.argv[2]
-          matches = []
-          for p in data.get('result') or []:
-              sub = (p.get('subdomain') or '').strip()
-              if sub == host:
-                  matches.append(p.get('name'))
-          if len(matches) != 1 or not matches[0]:
-              raise SystemExit(f'Expected exactly one existing Pages project for {host}; found {matches}')
-          print(matches[0])
+          result = data.get('result') or {}
+          name = result.get('name') or ''
+          subdomain = result.get('subdomain') or ''
+          expected_name, expected_host = sys.argv[2], sys.argv[3]
+          if name != expected_name:
+              raise SystemExit(f'Project name mismatch: {name!r}')
+          if subdomain != expected_host:
+              raise SystemExit(f'Project subdomain mismatch: {subdomain!r}')
+          print(f'confirmed_project={name}')
+          print(f'confirmed_subdomain={subdomain}')
           PY
-          )
-          echo "project=${project}" >> "$GITHUB_OUTPUT"
-          echo "resolved_project=${project}"
+          echo "project=${PROJECT_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Deploy source to existing Cloudflare Pages project
         uses: cloudflare/wrangler-action@v3
