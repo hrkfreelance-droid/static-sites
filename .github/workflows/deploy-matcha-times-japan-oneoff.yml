@@ -1,4 +1,4 @@
-name: One-off deploy MATCHA TIMES Japan to existing Cloudflare Pages project
+name: One-off patch MATCHA TIMES Japan production index
 
 on:
   push:
@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      deployments: write
     steps:
       - name: Checkout helper repository
         uses: actions/checkout@v4
@@ -23,7 +22,7 @@ jobs:
           ref: main
           path: japan-site
 
-      - name: Confirm Delivery button is absent in source
+      - name: Verify source change only
         shell: bash
         run: |
           set -euo pipefail
@@ -33,53 +32,36 @@ jobs:
           grep -Fq 'MATCHA TIMES Asakusa' japan-site/index.html
           echo 'source_check=PASS'
 
-      - name: Confirm existing Cloudflare Pages production project
-        id: resolve
+      - name: Patch production manifest with new index.html only
         shell: bash
         env:
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          TARGET_HOST: matcha-times-japan.pages.dev
           PROJECT_NAME: matcha-times-japan
-        run: |
-          set -euo pipefail
-          api="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}"
-          curl -fsS \
-            -H "Authorization: Bearer ${CF_API_TOKEN}" \
-            "${api}/pages/projects/${PROJECT_NAME}" \
-            -o /tmp/project.json
-          python3 - /tmp/project.json "$PROJECT_NAME" "$TARGET_HOST" <<'PY'
-          import json, sys
-          data = json.load(open(sys.argv[1]))
-          result = data.get('result') or {}
-          name = result.get('name') or ''
-          subdomain = result.get('subdomain') or ''
-          expected_name, expected_host = sys.argv[2], sys.argv[3]
-          if name != expected_name:
-              raise SystemExit(f'Project name mismatch: {name!r}')
-          if subdomain != expected_host:
-              raise SystemExit(f'Project subdomain mismatch: {subdomain!r}')
-          print(f'confirmed_project={name}')
-          print(f'confirmed_subdomain={subdomain}')
-          PY
-          echo "project=${PROJECT_NAME}" >> "$GITHUB_OUTPUT"
-
-      - name: Rebuild deployment directory from current production manifest
-        shell: bash
-        env:
-          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          PROJECT_NAME: ${{ steps.resolve.outputs.project }}
+          TARGET_HOST: matcha-times-japan.pages.dev
         run: |
           set -euo pipefail
           api="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}"
           auth=(-H "Authorization: Bearer ${CF_API_TOKEN}")
+          json_auth=(-H "Authorization: Bearer ${CF_API_TOKEN}" -H 'Content-Type: application/json')
 
+          # Confirm the exact existing production project and hostname.
+          curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}" -o /tmp/project.json
+          python3 - /tmp/project.json "$PROJECT_NAME" "$TARGET_HOST" <<'PY'
+          import json,sys
+          r=(json.load(open(sys.argv[1])).get('result') or {})
+          if r.get('name') != sys.argv[2]:
+              raise SystemExit('Project name mismatch')
+          if r.get('subdomain') != sys.argv[3]:
+              raise SystemExit('Project subdomain mismatch')
+          print('project_check=PASS')
+          PY
+
+          # Read the latest production deployment and preserve its entire manifest.
           curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments" -o /tmp/deployments.json
           dep_id=$(python3 - /tmp/deployments.json <<'PY'
-          import json, sys
-          rows = (json.load(open(sys.argv[1])).get('result') or [])
-          for d in rows:
+          import json,sys
+          for d in (json.load(open(sys.argv[1])).get('result') or []):
               if d.get('environment') == 'production':
                   print(d.get('id') or '')
                   break
@@ -88,77 +70,147 @@ jobs:
           PY
           )
           [ -n "$dep_id" ]
-
           curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments/${dep_id}" -o /tmp/deployment.json
-          rm -rf deploy-site
-          mkdir -p deploy-site
 
-          python3 - /tmp/deployment.json japan-site deploy-site <<'PY'
-          import hashlib, json, os, shutil, sys
-          deployment, source_root, out_root = sys.argv[1:4]
-          data = json.load(open(deployment)).get('result') or {}
-          manifest = data.get('files') or {}
+          # Validate every non-index source file still matches the production manifest,
+          # then replace only the index.html hash in a copy of that manifest.
+          python3 - /tmp/deployment.json japan-site/index.html japan-site /tmp/manifest-new.json /tmp/upload.json /tmp/new-hash.txt <<'PY'
+          import base64, hashlib, json, mimetypes, os, sys
+          dep_file, index_file, source_root, manifest_out, upload_out, hash_out = sys.argv[1:]
+          result = json.load(open(dep_file)).get('result') or {}
+          manifest = result.get('files') or {}
           if not manifest:
-              raise SystemExit('Current production manifest is empty')
+              raise SystemExit('Production manifest is empty')
 
-          missing = []
-          mismatched = []
-          copied = 0
-          replaced_index = False
-
+          mismatched=[]
+          missing=[]
+          index_keys=[]
           for web_path, expected in manifest.items():
-              rel = str(web_path).lstrip('/') or 'index.html'
-              src = os.path.join(source_root, rel)
-              dst = os.path.join(out_root, rel)
+              rel=str(web_path).lstrip('/') or 'index.html'
+              if rel == 'index.html':
+                  index_keys.append(web_path)
+                  continue
+              src=os.path.join(source_root, rel)
               if not os.path.isfile(src):
                   missing.append(rel)
                   continue
-
-              if rel == 'index.html':
-                  os.makedirs(os.path.dirname(dst) or out_root, exist_ok=True)
-                  shutil.copy2(src, dst)
-                  copied += 1
-                  replaced_index = True
-                  continue
-
-              raw = open(src, 'rb').read()
-              digest = hashlib.sha256(raw).hexdigest()
-              if isinstance(expected, str) and len(expected) == 64 and digest != expected:
+              digest=hashlib.sha256(open(src,'rb').read()).hexdigest()
+              if isinstance(expected,str) and len(expected)==64 and digest != expected:
                   mismatched.append(rel)
-                  continue
-
-              os.makedirs(os.path.dirname(dst) or out_root, exist_ok=True)
-              shutil.copy2(src, dst)
-              copied += 1
 
           print(f'manifest_files={len(manifest)}')
-          print(f'copied_files={copied}')
-          print(f'missing_files={len(missing)}')
-          print(f'mismatched_files={len(mismatched)}')
-          print(f'index_replaced={str(replaced_index).lower()}')
-          if missing:
-              print('missing_sample=' + ' | '.join(missing[:10]))
-          if mismatched:
-              print('mismatch_sample=' + ' | '.join(mismatched[:10]))
-          if missing or mismatched or not replaced_index or copied != len(manifest):
-              raise SystemExit('Refusing deploy because local source does not match current production manifest outside index.html')
+          print(f'non_index_missing={len(missing)}')
+          print(f'non_index_mismatched={len(mismatched)}')
+          print(f'index_manifest_keys={len(index_keys)}')
+          if missing or mismatched:
+              if missing: print('missing_sample=' + ' | '.join(missing[:10]))
+              if mismatched: print('mismatch_sample=' + ' | '.join(mismatched[:10]))
+              raise SystemExit('Refusing deployment because production differs outside index.html')
+          if not index_keys:
+              raise SystemExit('No index.html key found in production manifest')
+
+          raw=open(index_file,'rb').read()
+          new_hash=hashlib.sha256(raw).hexdigest()
+          for key in index_keys:
+              manifest[key]=new_hash
+          with open(manifest_out,'w') as f:
+              json.dump(manifest,f,separators=(',',':'),sort_keys=True)
+          upload=[{
+              'key':new_hash,
+              'value':base64.b64encode(raw).decode('ascii'),
+              'metadata':{'contentType':'text/html;charset=UTF-8'},
+              'base64':True,
+          }]
+          with open(upload_out,'w') as f:
+              json.dump(upload,f,separators=(',',':'))
+          open(hash_out,'w').write(new_hash)
+          print('manifest_patch=PASS')
           PY
 
-          find deploy-site -type f -size +25M -print -quit | grep -q . && {
-            echo 'Refusing deploy: manifest contains a file larger than 25 MiB'
-            exit 1
-          } || true
-          echo 'manifest_rebuild=PASS'
+          new_hash=$(cat /tmp/new-hash.txt)
 
-      - name: Deploy reconstructed site to existing Cloudflare Pages project
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy deploy-site --project-name=${{ steps.resolve.outputs.project }} --branch=main
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          # Obtain short-lived Direct Upload token without exposing it.
+          curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/upload-token" -o /tmp/upload-token.json
+          upload_jwt=$(python3 - /tmp/upload-token.json <<'PY'
+          import json,sys
+          print(((json.load(open(sys.argv[1])).get('result') or {}).get('jwt')) or '')
+          PY
+          )
+          [ -n "$upload_jwt" ]
+          echo "::add-mask::${upload_jwt}"
 
-      - name: Verify production hostname no longer contains Delivery button
+          # Upload only the new index.html asset if its hash is not already present.
+          python3 - "$new_hash" /tmp/check-missing.json <<'PY'
+          import json,sys
+          json.dump({'hashes':[sys.argv[1]]},open(sys.argv[2],'w'),separators=(',',':'))
+          PY
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${upload_jwt}" \
+            -H 'Content-Type: application/json' \
+            'https://api.cloudflare.com/client/v4/pages/assets/check-missing' \
+            --data-binary @/tmp/check-missing.json \
+            -o /tmp/missing.json
+          needs_upload=$(python3 - /tmp/missing.json "$new_hash" <<'PY'
+          import json,sys
+          rows=json.load(open(sys.argv[1])).get('result') or []
+          print('yes' if sys.argv[2] in rows else 'no')
+          PY
+          )
+          if [ "$needs_upload" = yes ]; then
+            curl -fsS -X POST \
+              -H "Authorization: Bearer ${upload_jwt}" \
+              -H 'Content-Type: application/json' \
+              'https://api.cloudflare.com/client/v4/pages/assets/upload' \
+              --data-binary @/tmp/upload.json \
+              -o /tmp/upload-response.json
+            python3 - /tmp/upload-response.json <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[1]))
+          if not d.get('success'):
+              raise SystemExit('Asset upload failed')
+          print('index_asset_upload=PASS')
+          PY
+          else
+            echo 'index_asset_upload=ALREADY_PRESENT'
+          fi
+
+          # Create a new production deployment using the old manifest + only the new index hash.
+          source_commit=$(git -C japan-site rev-parse HEAD)
+          curl -fsS -X POST "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments" \
+            --form-string 'branch=main' \
+            --form-string 'commit_dirty=false' \
+            --form-string "commit_hash=${source_commit}" \
+            --form-string 'commit_message=Remove obsolete delivery button' \
+            --form-string "manifest=$(cat /tmp/manifest-new.json)" \
+            -o /tmp/create.json
+          new_id=$(python3 - /tmp/create.json <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[1]))
+          if not d.get('success'):
+              print('Cloudflare errors:', d.get('errors'))
+              raise SystemExit(1)
+          print((d.get('result') or {}).get('id') or '')
+          PY
+          )
+          [ -n "$new_id" ]
+          echo 'deployment_created=PASS'
+
+          final=''
+          for i in $(seq 1 60); do
+            sleep 2
+            curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments/${new_id}" -o /tmp/status.json || continue
+            final=$(python3 - /tmp/status.json <<'PY'
+          import json,sys
+          r=json.load(open(sys.argv[1])).get('result') or {}
+          print(((r.get('latest_stage') or {}).get('status')) or '')
+          PY
+            )
+            case "$final" in success|failure|canceled) break;; esac
+          done
+          [ "$final" = success ]
+          echo 'cloudflare_deploy=PASS'
+
+      - name: Verify live production HTML
         shell: bash
         env:
           TARGET_URL: https://matcha-times-japan.pages.dev/
@@ -169,8 +221,12 @@ jobs:
           for i in $(seq 1 30); do
             curl -fsSL --compressed "${TARGET_URL}?verify=$(date +%s%N)" -o "$html" || true
             if grep -Fq 'MATCHA TIMES Asakusa' "$html" \
+              && grep -Fq '>📞 Call</a>' "$html" \
+              && grep -Fq '>📍 Location</a>' "$html" \
+              && grep -Fq '<span>Menu</span>' "$html" \
               && ! grep -Fq 'https://me.nu/s153595/fenwltj' "$html" \
-              && ! grep -Fq 'class="store-link btn-delivery"' "$html"; then
+              && ! grep -Fq 'class="store-link btn-delivery"' "$html" \
+              && ! grep -Fq 'menu-logo-official.png' "$html"; then
               ok=1
               break
             fi
