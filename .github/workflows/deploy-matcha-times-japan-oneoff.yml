@@ -1,4 +1,4 @@
-name: One-off rollback MATCHA TIMES Japan production
+name: One-off inspect MATCHA TIMES Japan Pages metadata
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
       - '.github/workflows/deploy-matcha-times-japan-oneoff.yml'
 
 jobs:
-  rollback:
+  inspect:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -15,76 +15,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Roll back bad production deployment
+      - name: Inspect safe deployment metadata
         shell: bash
         env:
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           PROJECT_NAME: matcha-times-japan
-          TARGET_HOST: matcha-times-japan.pages.dev
         run: |
           set -euo pipefail
           api="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}"
           auth=(-H "Authorization: Bearer ${CF_API_TOKEN}")
-
           curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}" -o /tmp/project.json
-          python3 - /tmp/project.json "$PROJECT_NAME" "$TARGET_HOST" <<'PY'
-          import json,sys
-          r=(json.load(open(sys.argv[1])).get('result') or {})
-          if r.get('name') != sys.argv[2] or r.get('subdomain') != sys.argv[3]:
-              raise SystemExit('Project identity mismatch')
-          src=r.get('source') or {}
-          cfg=r.get('build_config') or {}
-          print('project_check=PASS')
-          print('source_type=' + str(src.get('type') or ''))
-          print('source_repo=' + str(((src.get('config') or {}).get('repo_name')) or ''))
-          print('production_branch=' + str(r.get('production_branch') or ''))
-          print('build_command=' + str(cfg.get('build_command') or ''))
-          print('destination_dir=' + str(cfg.get('destination_dir') or ''))
-          PY
-
           curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments" -o /tmp/deployments.json
-          target_id=$(python3 - /tmp/deployments.json <<'PY'
+          python3 - /tmp/project.json /tmp/deployments.json <<'PY'
           import json,sys
-          rows=json.load(open(sys.argv[1])).get('result') or []
-          candidates=[]
-          for d in rows:
-              if d.get('environment') != 'production':
-                  continue
-              msg=((d.get('deployment_trigger') or {}).get('metadata') or {}).get('commit_message') or ''
-              status=((d.get('latest_stage') or {}).get('status')) or ''
-              did=d.get('id') or ''
-              if status == 'success' and did and msg != 'Remove obsolete delivery button':
-                  candidates.append((d.get('created_on') or '', did, msg))
-          candidates.sort(reverse=True)
-          if not candidates:
-              raise SystemExit('No previous successful production deployment found')
-          print(candidates[0][1])
+          p=(json.load(open(sys.argv[1])).get('result') or {})
+          rows=json.load(open(sys.argv[2])).get('result') or []
+          print('PROJECT')
+          for k in ['name','subdomain','production_branch','production_script_name','preview_script_name','uses_functions','framework','framework_version','wrangler_config_hash']:
+              print(f'{k}={p.get(k)!r}')
+          print('build_config=' + repr(p.get('build_config')))
+          print('source_type=' + repr((p.get('source') or {}).get('type')))
+          prod=(p.get('deployment_configs') or {}).get('production') or {}
+          for k in ['compatibility_date','compatibility_flags','fail_open','usage_model','mode','always_use_latest_compatibility_date']:
+              print(f'production_config.{k}={prod.get(k)!r}')
+          print('production_config_keys=' + ','.join(sorted(prod.keys())))
+          print('DEPLOYMENTS')
+          for d in rows[:10]:
+              trig=(d.get('deployment_trigger') or {}).get('metadata') or {}
+              print('---')
+              for k in ['id','environment','url','created_on','uses_functions','wrangler_config_hash']:
+                  print(f'{k}={d.get(k)!r}')
+              print('commit_message=' + repr(trig.get('commit_message')))
+              print('commit_hash=' + repr(trig.get('commit_hash')))
+              print('latest_stage=' + repr(d.get('latest_stage')))
+              print('build_config=' + repr(d.get('build_config')))
+              print('keys=' + ','.join(sorted(d.keys())))
           PY
-          )
-          [ -n "$target_id" ]
-
-          curl -fsS -X POST "${auth[@]}" \
-            "${api}/pages/projects/${PROJECT_NAME}/deployments/${target_id}/rollback" \
-            -o /tmp/rollback.json
-          python3 - /tmp/rollback.json <<'PY'
-          import json,sys
-          d=json.load(open(sys.argv[1]))
-          if not d.get('success'):
-              print(d.get('errors'))
-              raise SystemExit('Rollback failed')
-          print('rollback_api=PASS')
-          PY
-
-          html=$(mktemp)
-          ok=0
-          for i in $(seq 1 30); do
-            code=$(curl -sS -L --compressed -o "$html" -w '%{http_code}' "https://${TARGET_HOST}/?rollback_verify=$(date +%s%N)" || true)
-            if [ "$code" = 200 ] && grep -Fq 'MATCHA TIMES Asakusa' "$html"; then
-              ok=1
-              break
-            fi
-            sleep 2
-          done
-          [ "$ok" -eq 1 ]
-          echo 'rollback_live_verify=PASS'
