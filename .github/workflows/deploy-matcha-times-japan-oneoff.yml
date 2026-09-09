@@ -64,12 +64,98 @@ jobs:
           PY
           echo "project=${PROJECT_NAME}" >> "$GITHUB_OUTPUT"
 
-      - name: Deploy source to existing Cloudflare Pages project
+      - name: Rebuild deployment directory from current production manifest
+        shell: bash
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PROJECT_NAME: ${{ steps.resolve.outputs.project }}
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}"
+          auth=(-H "Authorization: Bearer ${CF_API_TOKEN}")
+
+          curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments" -o /tmp/deployments.json
+          dep_id=$(python3 - /tmp/deployments.json <<'PY'
+          import json, sys
+          rows = (json.load(open(sys.argv[1])).get('result') or [])
+          for d in rows:
+              if d.get('environment') == 'production':
+                  print(d.get('id') or '')
+                  break
+          else:
+              raise SystemExit('No production deployment found')
+          PY
+          )
+          [ -n "$dep_id" ]
+
+          curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments/${dep_id}" -o /tmp/deployment.json
+          rm -rf deploy-site
+          mkdir -p deploy-site
+
+          python3 - /tmp/deployment.json japan-site deploy-site <<'PY'
+          import hashlib, json, os, shutil, sys
+          deployment, source_root, out_root = sys.argv[1:4]
+          data = json.load(open(deployment)).get('result') or {}
+          manifest = data.get('files') or {}
+          if not manifest:
+              raise SystemExit('Current production manifest is empty')
+
+          missing = []
+          mismatched = []
+          copied = 0
+          replaced_index = False
+
+          for web_path, expected in manifest.items():
+              rel = str(web_path).lstrip('/') or 'index.html'
+              src = os.path.join(source_root, rel)
+              dst = os.path.join(out_root, rel)
+              if not os.path.isfile(src):
+                  missing.append(rel)
+                  continue
+
+              if rel == 'index.html':
+                  os.makedirs(os.path.dirname(dst) or out_root, exist_ok=True)
+                  shutil.copy2(src, dst)
+                  copied += 1
+                  replaced_index = True
+                  continue
+
+              raw = open(src, 'rb').read()
+              digest = hashlib.sha256(raw).hexdigest()
+              if isinstance(expected, str) and len(expected) == 64 and digest != expected:
+                  mismatched.append(rel)
+                  continue
+
+              os.makedirs(os.path.dirname(dst) or out_root, exist_ok=True)
+              shutil.copy2(src, dst)
+              copied += 1
+
+          print(f'manifest_files={len(manifest)}')
+          print(f'copied_files={copied}')
+          print(f'missing_files={len(missing)}')
+          print(f'mismatched_files={len(mismatched)}')
+          print(f'index_replaced={str(replaced_index).lower()}')
+          if missing:
+              print('missing_sample=' + ' | '.join(missing[:10]))
+          if mismatched:
+              print('mismatch_sample=' + ' | '.join(mismatched[:10]))
+          if missing or mismatched or not replaced_index or copied != len(manifest):
+              raise SystemExit('Refusing deploy because local source does not match current production manifest outside index.html')
+          PY
+
+          find deploy-site -type f -size +25M -print -quit | grep -q . && {
+            echo 'Refusing deploy: manifest contains a file larger than 25 MiB'
+            exit 1
+          } || true
+          echo 'manifest_rebuild=PASS'
+
+      - name: Deploy reconstructed site to existing Cloudflare Pages project
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy japan-site --project-name=${{ steps.resolve.outputs.project }} --branch=main
+          command: pages deploy deploy-site --project-name=${{ steps.resolve.outputs.project }} --branch=main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify production hostname no longer contains Delivery button
