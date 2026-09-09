@@ -1,4 +1,4 @@
-name: One-off inspect MATCHA TIMES Japan Pages metadata
+name: One-off safe deploy MATCHA TIMES Japan index
 
 on:
   push:
@@ -7,48 +7,243 @@ on:
       - '.github/workflows/deploy-matcha-times-japan-oneoff.yml'
 
 jobs:
-  inspect:
+  deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - name: Checkout
+      - name: Checkout helper
         uses: actions/checkout@v4
 
-      - name: Inspect safe deployment metadata
+      - name: Checkout MATCHA TIMES Japan source
+        uses: actions/checkout@v4
+        with:
+          repository: hrkfreelance-droid/matcha-times-japan-asakusa-preview
+          ref: main
+          path: japan-site
+
+      - name: Deploy changed index only with preview gate and rollback guard
         shell: bash
         env:
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           PROJECT_NAME: matcha-times-japan
+          TARGET_HOST: matcha-times-japan.pages.dev
         run: |
           set -euo pipefail
           api="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}"
           auth=(-H "Authorization: Bearer ${CF_API_TOKEN}")
+          index='japan-site/index.html'
+
+          # Source must contain only the intended visible state.
+          test -f "$index"
+          grep -Fq 'MATCHA TIMES Asakusa' "$index"
+          grep -Fq '>📞 Call</a>' "$index"
+          grep -Fq '>📍 Location</a>' "$index"
+          grep -Fq '<span>Menu</span>' "$index"
+          ! grep -Fq 'https://me.nu/s153595/fenwltj' "$index"
+          ! grep -Fq 'class="store-link btn-delivery"' "$index"
+          echo 'source_check=PASS'
+
           curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}" -o /tmp/project.json
-          curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments" -o /tmp/deployments.json
-          python3 - /tmp/project.json /tmp/deployments.json <<'PY'
+          python3 - /tmp/project.json "$PROJECT_NAME" "$TARGET_HOST" <<'PY'
           import json,sys
-          p=(json.load(open(sys.argv[1])).get('result') or {})
-          rows=json.load(open(sys.argv[2])).get('result') or []
-          print('PROJECT')
-          for k in ['name','subdomain','production_branch','production_script_name','preview_script_name','uses_functions','framework','framework_version','wrangler_config_hash']:
-              print(f'{k}={p.get(k)!r}')
-          print('build_config=' + repr(p.get('build_config')))
-          print('source_type=' + repr((p.get('source') or {}).get('type')))
-          prod=(p.get('deployment_configs') or {}).get('production') or {}
-          for k in ['compatibility_date','compatibility_flags','fail_open','usage_model','mode','always_use_latest_compatibility_date']:
-              print(f'production_config.{k}={prod.get(k)!r}')
-          print('production_config_keys=' + ','.join(sorted(prod.keys())))
-          print('DEPLOYMENTS')
-          for d in rows[:10]:
-              trig=(d.get('deployment_trigger') or {}).get('metadata') or {}
-              print('---')
-              for k in ['id','environment','url','created_on','uses_functions','wrangler_config_hash']:
-                  print(f'{k}={d.get(k)!r}')
-              print('commit_message=' + repr(trig.get('commit_message')))
-              print('commit_hash=' + repr(trig.get('commit_hash')))
-              print('latest_stage=' + repr(d.get('latest_stage')))
-              print('build_config=' + repr(d.get('build_config')))
-              print('keys=' + ','.join(sorted(d.keys())))
+          r=(json.load(open(sys.argv[1])).get('result') or {})
+          if r.get('name') != sys.argv[2] or r.get('subdomain') != sys.argv[3]:
+              raise SystemExit('Project identity mismatch')
+          if r.get('uses_functions') not in (False, None):
+              raise SystemExit('Unexpected Pages Functions state')
+          print('project_check=PASS')
           PY
+
+          # Capture current working production deployment as rollback target.
+          curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments" -o /tmp/deployments.json
+          good_id=$(python3 - /tmp/deployments.json <<'PY'
+          import json,sys
+          rows=json.load(open(sys.argv[1])).get('result') or []
+          for d in rows:
+              if d.get('environment') == 'production':
+                  status=((d.get('latest_stage') or {}).get('status')) or ''
+                  msg=((d.get('deployment_trigger') or {}).get('metadata') or {}).get('commit_message') or ''
+                  if status == 'success' and msg != 'Remove obsolete delivery button':
+                      print(d.get('id') or '')
+                      break
+          else:
+              raise SystemExit('No safe current production deployment found')
+          PY
+          )
+          [ -n "$good_id" ]
+          curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments/${good_id}" -o /tmp/good.json
+
+          # Copy current production manifest and replace index.html hash only.
+          python3 - /tmp/good.json japan-site /tmp/manifest-new.json /tmp/index-upload.json /tmp/all-hashes.json /tmp/new-hash.txt <<'PY'
+          import base64, hashlib, json, os, sys
+          dep_file, root, manifest_out, upload_out, hashes_out, hash_out = sys.argv[1:]
+          result=json.load(open(dep_file)).get('result') or {}
+          manifest=result.get('files') or {}
+          if not manifest:
+              raise SystemExit('Current production manifest is empty')
+          missing=[]; mismatch=[]; index_keys=[]
+          for web_path, expected in manifest.items():
+              rel=str(web_path).lstrip('/') or 'index.html'
+              src=os.path.join(root,rel)
+              if rel == 'index.html':
+                  index_keys.append(web_path)
+                  continue
+              if not os.path.isfile(src):
+                  missing.append(rel); continue
+              digest=hashlib.sha256(open(src,'rb').read()).hexdigest()
+              if isinstance(expected,str) and len(expected)==64 and digest != expected:
+                  mismatch.append(rel)
+          if missing or mismatch or len(index_keys) != 1:
+              print('missing=',missing[:10]); print('mismatch=',mismatch[:10]); print('index_keys=',index_keys)
+              raise SystemExit('Refusing deployment: production differs outside index.html')
+          raw=open(os.path.join(root,'index.html'),'rb').read()
+          h=hashlib.sha256(raw).hexdigest()
+          manifest[index_keys[0]]=h
+          json.dump(manifest,open(manifest_out,'w'),separators=(',',':'),sort_keys=True)
+          json.dump([{
+              'base64':True,
+              'key':h,
+              'metadata':{'contentType':'text/html'},
+              'value':base64.b64encode(raw).decode('ascii')
+          }],open(upload_out,'w'),separators=(',',':'))
+          json.dump({'hashes':sorted(set(manifest.values()))},open(hashes_out,'w'),separators=(',',':'))
+          open(hash_out,'w').write(h)
+          print(f'manifest_files={len(manifest)}')
+          print('manifest_patch=PASS')
+          PY
+          new_hash=$(cat /tmp/new-hash.txt)
+
+          # Get short-lived Pages asset JWT.
+          curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/upload-token" -o /tmp/upload-token.json
+          upload_jwt=$(python3 - /tmp/upload-token.json <<'PY'
+          import json,sys
+          print(((json.load(open(sys.argv[1])).get('result') or {}).get('jwt')) or '')
+          PY
+          )
+          [ -n "$upload_jwt" ]
+          echo "::add-mask::${upload_jwt}"
+
+          # Ensure new index asset exists.
+          printf '{"hashes":["%s"]}' "$new_hash" > /tmp/check.json
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${upload_jwt}" \
+            -H 'Content-Type: application/json' \
+            'https://api.cloudflare.com/client/v4/pages/assets/check-missing' \
+            --data-binary @/tmp/check.json -o /tmp/missing.json
+          needs_upload=$(python3 - /tmp/missing.json "$new_hash" <<'PY'
+          import json,sys
+          rows=json.load(open(sys.argv[1])).get('result') or []
+          print('yes' if sys.argv[2] in rows else 'no')
+          PY
+          )
+          if [ "$needs_upload" = yes ]; then
+            curl -fsS -X POST \
+              -H "Authorization: Bearer ${upload_jwt}" \
+              -H 'Content-Type: application/json' \
+              'https://api.cloudflare.com/client/v4/pages/assets/upload' \
+              --data-binary @/tmp/index-upload.json -o /tmp/upload-response.json
+            python3 - /tmp/upload-response.json <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[1]))
+          if not d.get('success'): raise SystemExit(d.get('errors'))
+          print('index_upload=PASS')
+          PY
+          else
+            echo 'index_upload=ALREADY_PRESENT'
+          fi
+
+          # Critical Pages Direct Upload step: register the complete manifest hash set.
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${upload_jwt}" \
+            -H 'Content-Type: application/json' \
+            'https://api.cloudflare.com/client/v4/pages/assets/upsert-hashes' \
+            --data-binary @/tmp/all-hashes.json -o /tmp/upsert.json
+          python3 - /tmp/upsert.json <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[1]))
+          if not d.get('success'): raise SystemExit(d.get('errors'))
+          print('asset_hash_upsert=PASS')
+          PY
+
+          source_commit=$(git -C japan-site rev-parse HEAD)
+
+          create_deployment () {
+            branch="$1"; message="$2"; output="$3"
+            curl -fsS -X POST "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments" \
+              --form-string "branch=${branch}" \
+              --form-string 'commit_dirty=false' \
+              --form-string "commit_hash=${source_commit}" \
+              --form-string "commit_message=${message}" \
+              --form-string "manifest=$(cat /tmp/manifest-new.json)" \
+              -o "$output"
+            python3 - "$output" <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[1]))
+          if not d.get('success'):
+              print(d.get('errors'))
+              raise SystemExit(1)
+          r=d.get('result') or {}
+          print((r.get('id') or '') + '|' + (r.get('url') or ''))
+          PY
+          }
+
+          wait_deployment () {
+            id="$1"
+            for i in $(seq 1 60); do
+              sleep 2
+              curl -fsS "${auth[@]}" "${api}/pages/projects/${PROJECT_NAME}/deployments/${id}" -o /tmp/status.json || continue
+              status=$(python3 - /tmp/status.json <<'PY'
+          import json,sys
+          r=json.load(open(sys.argv[1])).get('result') or {}
+          print(((r.get('latest_stage') or {}).get('status')) or '')
+          PY
+              )
+              case "$status" in success) return 0;; failure|canceled) return 1;; esac
+            done
+            return 1
+          }
+
+          verify_url () {
+            url="$1"; expect_no_delivery="$2"
+            html=$(mktemp)
+            for i in $(seq 1 30); do
+              code=$(curl -sS -L --compressed -o "$html" -w '%{http_code}' "${url}?verify=$(date +%s%N)" || true)
+              if [ "$code" = 200 ] \
+                && grep -Fq 'MATCHA TIMES Asakusa' "$html" \
+                && grep -Fq '>📞 Call</a>' "$html" \
+                && grep -Fq '>📍 Location</a>' "$html" \
+                && grep -Fq '<span>Menu</span>' "$html"; then
+                if [ "$expect_no_delivery" != yes ] || { ! grep -Fq 'https://me.nu/s153595/fenwltj' "$html" && ! grep -Fq 'class="store-link btn-delivery"' "$html"; }; then
+                  return 0
+                fi
+              fi
+              sleep 2
+            done
+            return 1
+          }
+
+          # Preview gate: production is untouched until this exact manifest serves correctly.
+          preview_branch="remove-delivery-preview-20260909"
+          preview_info=$(create_deployment "$preview_branch" 'Preview remove obsolete delivery button' /tmp/preview.json)
+          preview_id=${preview_info%%|*}
+          preview_url=${preview_info#*|}
+          [ -n "$preview_id" ] && [ -n "$preview_url" ]
+          wait_deployment "$preview_id"
+          verify_url "$preview_url" yes
+          echo 'preview_verify=PASS'
+
+          # Production deploy, with automatic rollback on any live verification failure.
+          prod_info=$(create_deployment main 'Remove obsolete delivery button' /tmp/prod.json)
+          prod_id=${prod_info%%|*}
+          [ -n "$prod_id" ]
+          if ! wait_deployment "$prod_id" || ! verify_url "https://${TARGET_HOST}/" yes; then
+            echo 'production verify failed; rolling back'
+            curl -fsS -X POST "${auth[@]}" \
+              "${api}/pages/projects/${PROJECT_NAME}/deployments/${good_id}/rollback" \
+              -o /tmp/rollback.json
+            verify_url "https://${TARGET_HOST}/" no || true
+            exit 1
+          fi
+          echo 'production_verify=PASS'
