@@ -1,0 +1,94 @@
+name: One-off deploy MATCHA TIMES Japan to existing Cloudflare Pages project
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/deploy-matcha-times-japan-oneoff.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: Checkout helper repository
+        uses: actions/checkout@v4
+
+      - name: Checkout MATCHA TIMES Japan source
+        uses: actions/checkout@v4
+        with:
+          repository: hrkfreelance-droid/matcha-times-japan-asakusa-preview
+          ref: main
+          path: japan-site
+
+      - name: Confirm Delivery button is absent in source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f japan-site/index.html
+          ! grep -Fq 'https://me.nu/s153595/fenwltj' japan-site/index.html
+          ! grep -Fq 'class="store-link btn-delivery"' japan-site/index.html
+          grep -Fq 'MATCHA TIMES Asakusa' japan-site/index.html
+          echo 'source_check=PASS'
+
+      - name: Resolve existing Cloudflare Pages project by production hostname
+        id: resolve
+        shell: bash
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TARGET_HOST: matcha-times-japan.pages.dev
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}"
+          curl -fsS \
+            -H "Authorization: Bearer ${CF_API_TOKEN}" \
+            "${api}/pages/projects?per_page=100" \
+            -o /tmp/projects.json
+          project=$(python3 - /tmp/projects.json "$TARGET_HOST" <<'PY'
+          import json, sys
+          data = json.load(open(sys.argv[1]))
+          host = sys.argv[2]
+          matches = []
+          for p in data.get('result') or []:
+              sub = (p.get('subdomain') or '').strip()
+              if sub == host:
+                  matches.append(p.get('name'))
+          if len(matches) != 1 or not matches[0]:
+              raise SystemExit(f'Expected exactly one existing Pages project for {host}; found {matches}')
+          print(matches[0])
+          PY
+          )
+          echo "project=${project}" >> "$GITHUB_OUTPUT"
+          echo "resolved_project=${project}"
+
+      - name: Deploy source to existing Cloudflare Pages project
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy japan-site --project-name=${{ steps.resolve.outputs.project }} --branch=main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify production hostname no longer contains Delivery button
+        shell: bash
+        env:
+          TARGET_URL: https://matcha-times-japan.pages.dev/
+        run: |
+          set -euo pipefail
+          html=$(mktemp)
+          ok=0
+          for i in $(seq 1 30); do
+            curl -fsSL --compressed "${TARGET_URL}?verify=$(date +%s%N)" -o "$html" || true
+            if grep -Fq 'MATCHA TIMES Asakusa' "$html" \
+              && ! grep -Fq 'https://me.nu/s153595/fenwltj' "$html" \
+              && ! grep -Fq 'class="store-link btn-delivery"' "$html"; then
+              ok=1
+              break
+            fi
+            sleep 2
+          done
+          [ "$ok" -eq 1 ]
+          echo 'production_verify=PASS'
